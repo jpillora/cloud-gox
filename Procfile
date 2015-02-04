@@ -1,0 +1,1 @@
+work: bin/run
