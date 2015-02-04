@@ -1,3 +1,13 @@
 #!/bin/sh
 
 echo "release! $@"
+
+cat << EOF
+---
+addons:
+  - shared-database:5mb
+config_vars:
+  PATH: bin:/usr/bin:/bin
+default_process_types:
+  hello: cat hello.txt
+EOF
