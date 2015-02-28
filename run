@@ -1,0 +1,6 @@
+#!/bin/bash
+
+go get github.com/laher/goxc
+goxc -version
+
+go run server.go
