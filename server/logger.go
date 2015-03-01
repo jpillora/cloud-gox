@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 
 	"golang.org/x/net/websocket"
@@ -37,10 +36,6 @@ func (l *Logger) Write(p []byte) (n int, err error) {
 		}
 	}()
 	return len(p), nil
-}
-
-func (l *Logger) Printf(f string, args ...interface{}) {
-	fmt.Fprintf(l, f, args...)
 }
 
 //bring websockets up to date with the log,

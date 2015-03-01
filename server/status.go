@@ -23,4 +23,5 @@ func (s *Server) statusReq(w http.ResponseWriter, r *http.Request) {
 		Done:      d,
 	})
 	w.Write(b)
+
 }

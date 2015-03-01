@@ -2,7 +2,9 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -93,6 +95,7 @@ func (s *Server) dequeue() {
 	}
 }
 
-func (s *Server) Printf(fmt string, args ...interface{}) {
-	s.logger.Printf(fmt, args...)
+func (s *Server) Printf(f string, args ...interface{}) {
+	log.Printf(f, args...)
+	fmt.Fprintf(s.logger, f, args...)
 }
