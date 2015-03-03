@@ -24,6 +24,10 @@ type Server struct {
 //NewServer creates a new Server
 func NewServer(port string) (*Server, error) {
 
+	if BINTRAY_API_KEY == "" {
+		return nil, errors.New("BINTRAY_API_KEY variable not sete")
+	}
+
 	dir := ""
 	gopath := os.Getenv("GOPATH") + "/src/github.com/jpillora/cloud-gox/static/"
 	if _, err := os.Stat("static/"); err == nil {

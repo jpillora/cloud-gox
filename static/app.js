@@ -2,21 +2,42 @@
 var config = document.querySelector("textarea");
 var log = document.querySelector("#log");
 
-var insert = function(cls, s) {
-	s = s.trim();
-	if(!s) return;
-	var span = document.createElement("span");
-	span.className = cls;
-	span.innerText = s + "\n";
-	log.appendChild(span);
-}
 
-var info = function(s) {
-	insert("info", s);
+var spans = [];
+
+var insert = function(cls, str) {
+	var lines = str.split("\n").reverse();
+	insertLines(cls, lines);
 };
 
-var print = function(s) {
-	insert("print", s);
+var insertLines = function(cls, lines) {
+	for(var i = 0; i < lines.length; i++) {
+		var l = lines[i];
+
+		var top = spans[0];
+		if(top && i === 0) {
+			top.innerText += l;
+			continue
+		}
+
+		var span = document.createElement("div");
+		span.className = cls;
+		span.innerText = l;
+
+		log.insertBefore(span, top);
+		spans.unshift(span);
+	}
+	while(spans.length > 1000) {
+		log.removeChild(span.pop());
+	}
+}
+
+var info = function(str) {
+	insert("info", str);
+};
+
+var print = function(str) {
+	insert("print", str);
 };
 
 var compile = function() {
@@ -24,7 +45,7 @@ var compile = function() {
 	try {
 		JSON.parse(body);
 	} catch(err) {
-		info(err);
+		info(""+err);
 		return;
 	}
 
@@ -42,23 +63,28 @@ var compile = function() {
 
 var t;
 var ws;
+//auto ping
+(setInterval(function ping() {
+	if(ws && ws.readyState === 1)
+		ws.send("ping!");
+}, 30*1000));
+//auto reconnect
 (function reconnect() {
-	info("connecting...");
+	info("connecting...\n");
 	ws = new WebSocket(location.origin.replace("http","ws") + "/log");
 
 	ws.onopen = function() {
-		info("connected");
+		info("connected\n");
 		t = 100;
 	};
 
 	ws.onclose = function() {
-		info("disconnected (retry in "+t+"ms)");
+		info("disconnected (retry in "+t+"ms)\n");
 		setTimeout(reconnect, t);
 		t *= 2;
 	};
 
 	ws.onmessage = function(e) {
-		console.log("'%s'", e.data);
 		print(e.data);
 	};
 }());

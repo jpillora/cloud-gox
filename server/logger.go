@@ -2,9 +2,7 @@ package server
 
 import (
 	"net/http"
-	"os"
 
-	"github.com/jpillora/ansi"
 	"golang.org/x/net/websocket"
 )
 
@@ -39,9 +37,12 @@ func (l *Logger) Write(p []byte) (n int, err error) {
 	if le > maxLogSize {
 		l.log = l.log[le-maxLogSize:]
 	}
-	os.Stdout.Write(ansi.Set(ansi.Green))
-	os.Stdout.Write(p)
-	os.Stdout.Write(ansi.Set(ansi.Reset))
+
+	//INSPECT BROADCAST
+	// os.Stdout.Write(ansi.Set(ansi.Green))
+	// os.Stdout.Write(p)
+	// os.Stdout.Write(ansi.Set(ansi.Reset))
+
 	//non-blocking broadcast
 	go func() {
 		for _, c := range l.conns {
