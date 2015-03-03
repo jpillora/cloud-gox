@@ -5,4 +5,4 @@ go get golang.org/x/tools/cmd/vet || exit 1
 go get github.com/laher/goxc
 goxc -version || exit 1
 
-go run server.go
+go run main.go
