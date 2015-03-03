@@ -2,9 +2,11 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 //Server is an HTTP server accepting requests
@@ -20,13 +22,24 @@ type Server struct {
 }
 
 //NewServer creates a new Server
-func NewServer(port string) *Server {
+func NewServer(port string) (*Server, error) {
+
+	dir := ""
+	gopath := os.Getenv("GOPATH") + "/github.com/jpillora/cloud-gox/static/"
+	if _, err := os.Stat("static/"); err == nil {
+		dir = "static/"
+	} else if _, err := os.Stat(gopath); err == nil {
+		dir = gopath
+	} else {
+		return nil, errors.New("static files directory not found")
+	}
+
 	return &Server{
 		Port:   port,
 		q:      make(chan *Compilation),
 		logger: NewLogger(),
-		files:  http.FileServer(http.Dir("static/")),
-	}
+		files:  http.FileServer(http.Dir(dir)),
+	}, nil
 }
 
 func (s *Server) Start() error {

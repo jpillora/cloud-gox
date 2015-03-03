@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -55,7 +54,6 @@ func (l *Logger) Write(p []byte) (n int, err error) {
 //bring websockets up to date with the log,
 //then stream updates
 func (l *Logger) _stream(conn *websocket.Conn) {
-	fmt.Printf("new websocket (log size %d)\n", len(l.log))
 	//connected!
 	conn.Write(l.log)
 	//add to map

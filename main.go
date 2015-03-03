@@ -14,7 +14,10 @@ func main() {
 		port = "3000"
 	}
 	//run server
-	s := server.NewServer(port)
+	s, err := server.NewServer(port)
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Printf("listening on %s...", port)
 	log.Fatal(s.Start())
 }
