@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Server) exec(dir, prog string, args ...string) error {
-	s.Printf(`Executing '%s %s' in '%s'`, prog, strings.Join(args, " "), dir)
+	s.Printf("Executing '%s %s' in '%s'\n", prog, strings.Join(args, " "), dir)
 	cmd := exec.Command(prog, args...)
 	cmd.Dir = dir
 	cmd.Stdout = s.logger
@@ -41,7 +41,6 @@ func (s *Server) compile(c *Compilation) error {
 		if err := s.exec(t, "goxc", "-bc", c.Build, "-n", n, "-d", BIN_DIR); err != nil {
 			return err
 		}
-
 		if err := s.upload(n); err != nil {
 			return err
 		}

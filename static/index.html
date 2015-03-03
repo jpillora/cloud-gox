@@ -6,8 +6,19 @@
 <body>
 
 	<div class="cage">
-		<textarea></textarea>
-		<pre>hello</pre>
+		<textarea>{
+  "package":"github.com/jpillora/chisel",
+  "build":"darwin",
+  "targets":["chiseld"]
+}</textarea>
+
+		<div class="controls">
+			<button onclick="compile()">Compile</button>
+		</div>
+
+		<div class="log">
+			<pre id="log"></pre>
+		</div>
 	</div>
 
 	<script src="app.js"></script>

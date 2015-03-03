@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -82,13 +81,12 @@ func (s *Server) dequeue() {
 	for c := range s.q {
 		c.Queued = false
 		s.curr = c
-		s.Printf("compiling '%s'...", c.Package)
-		err := s.compile(c)
-		if err != nil {
-			s.Printf("compile error '%s': %s", c.Package, err)
+		s.Printf("compiling '%s'...\n", c.Package)
+		if err := s.compile(c); err != nil {
+			s.Printf("compile error '%s': %s\n", c.Package, err)
 			c.Error = err.Error()
 		} else {
-			s.Printf("compiled '%s'", c.Package)
+			s.Printf("compiled '%s'\n", c.Package)
 		}
 		c.Completed = true
 		s.done = append(s.done, c)
@@ -96,6 +94,5 @@ func (s *Server) dequeue() {
 }
 
 func (s *Server) Printf(f string, args ...interface{}) {
-	log.Printf(f, args...)
 	fmt.Fprintf(s.logger, f, args...)
 }
