@@ -25,7 +25,7 @@ type Server struct {
 func NewServer(port string) (*Server, error) {
 
 	dir := ""
-	gopath := os.Getenv("GOPATH") + "/github.com/jpillora/cloud-gox/static/"
+	gopath := os.Getenv("GOPATH") + "/src/github.com/jpillora/cloud-gox/static/"
 	if _, err := os.Stat("static/"); err == nil {
 		dir = "static/"
 	} else if _, err := os.Stat(gopath); err == nil {
