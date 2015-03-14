@@ -4,6 +4,11 @@ html, body {
 	margin: 0;
 }
 
+body, button, textarea {
+	font-family: monospace;
+}
+
+
 .cage {
 	padding: 20px;
 }
@@ -11,9 +16,18 @@ html, body {
 textarea {
 	width: 100%;
 	height: 120px;
-	font-family: monospace;
 	font-size: 14px;
 }
+
+span.status {
+  background: #BBB;
+  padding: 3px;
+  border-radius: 2px;
+}
+span.status:not([color]) { display: none; }
+span.status[color=green] { background: rgb(137, 207, 137); }
+span.status[color=red] { background: red; color: white;}
+span.status[color=blue] { background: royalblue; color: white; }
 
 .cage > div {
 	margin-top: 10px;

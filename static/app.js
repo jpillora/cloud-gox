@@ -2,8 +2,74 @@
 var config = document.querySelector("textarea");
 var log = document.querySelector("#log");
 
-
+var seq = 0;
 var spans = [];
+
+var compile = function() {
+	var body = config.value;
+	try {
+		JSON.parse(body);
+	} catch(err) {
+		info(""+err);
+		return;
+	}
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", "/compile");
+	xhr.onload = function() {
+		if(xhr.status !== 200) {
+			info("compilation queue error: " + xhr.responseText);
+		}
+	};
+	xhr.send(body);
+};
+
+
+//====================
+
+function status(type, msg, color) {
+	var elem = document.querySelector("."+type+".status");
+	if(!elem) return console.warn("no ", type);
+	elem.innerText = msg;
+	if(color)
+		elem.setAttribute("color", color);
+};
+
+//=========================
+
+var ongoxevent = function(e) {
+	if(e.msg) {
+		onmessage(e.msg);
+	} else if(e.sts) {
+		onstatus(e.sts);
+	}
+}
+
+var onmessage = function(msg) {
+	seq = Math.max(seq, msg.id);
+	print(msg.txt);
+};
+
+var onstatus = function(s) {
+	if(s.current)
+		status("current", s.current.package, "green");
+	else
+		status("current", "not compiling", "grey");
+
+	status("queue", s.numQueued + " items queued",
+		s.numQueued ? "blue" : "grey");
+
+	var completed = s.done ? s.done.length : 0;
+	status("completed", completed + " items completed", "blue");
+};
+
+var info = function(str) {
+	insert("info", str);
+};
+
+var print = function(str) {
+	insert("print", str);
+};
 
 var insert = function(cls, str) {
 	var lines = str.split("\n").reverse();
@@ -30,39 +96,13 @@ var insertLines = function(cls, lines) {
 	while(spans.length > 1000) {
 		log.removeChild(span.pop());
 	}
-}
-
-var info = function(str) {
-	insert("info", str);
-};
-
-var print = function(str) {
-	insert("print", str);
-};
-
-var compile = function() {
-	var body = config.value;
-	try {
-		JSON.parse(body);
-	} catch(err) {
-		info(""+err);
-		return;
-	}
-
-	var xhr = new XMLHttpRequest();
-	xhr.open("POST", "/compile");
-	xhr.onload = function() {
-		if(xhr.status !== 200) {
-			info("compilation queue error: " + xhr.responseText);
-		}
-	};
-	xhr.send(body);
 };
 
 //====================
 
 var t;
 var ws;
+var seq = 0;
 //auto ping
 (setInterval(function ping() {
 	if(ws && ws.readyState === 1)
@@ -70,22 +110,33 @@ var ws;
 }, 30*1000));
 //auto reconnect
 (function reconnect() {
-	info("connecting...\n");
-	ws = new WebSocket(location.origin.replace("http","ws") + "/log");
+	status("connection", "connecting", "blue");
+	ws = new WebSocket(location.origin.replace("http","ws") + "/log", ""+seq);
 
 	ws.onopen = function() {
-		info("connected\n");
+		status("connection", "connected", "green");
 		t = 100;
 	};
 
 	ws.onclose = function() {
-		info("disconnected (retry in "+t+"ms)\n");
+		status("connection", "disconnected (retry in "+t+"ms)", "red");
 		setTimeout(reconnect, t);
 		t *= 2;
 	};
 
-	ws.onmessage = function(e) {
-		print(e.data);
+	ws.onmessage = function(msg) {
+		var e;
+		try {
+			e = JSON.parse(msg.data);
+		} catch(e) {
+			return;
+		}
+		if(!e)
+			return;
+		if(e instanceof Array)
+			e.forEach(ongoxevent);
+		else
+			ongoxevent(e);
 	};
 }());
 

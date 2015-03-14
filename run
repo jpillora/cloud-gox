@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#install goxc
+go get -v github.com/laher/goxc
+goxc -version || exit 1
+goxc -t > toolchain.log &
+
+#use most recent version
+go get -v github.com/jpillora/cloud-gox
+
+#could also go run main.go
+
+#run cloudgox!
+cloud-gox

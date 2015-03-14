@@ -4,6 +4,20 @@ package server
 // - github permissions
 // - safe storage of keys
 
+// get release
+// GET /repos/:owner/:repo/releases/tags/:tag
+
+// missing? create releaes
+// POST /repos/:owner/:repo/releases
+// {"tag_name":"..."}
+
+// release obj
+// {"upload_url":"..."}
+
+// per file
+// POST https://<upload_url>/repos/:owner/:repo/releases/:id/assets?name=foo.zip
+// [Content-Type: ...]
+
 // type Hook struct {
 // 	Ref        string
 // 	Created    bool
