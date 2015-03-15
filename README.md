@@ -17,6 +17,11 @@ A Go (Golang) Cross-Compiler in the Cloud
 
 3. After the toolchain compiles, you can now use it
 
+### Notes
+
+* **cloud-gox** will use `ldflags` to set your `VERSION` variable to your compile version.
+* **cloud-gox** does not currently use authentication, if you want to keep your cloud-gox app private, use a complicated app name and always use HTTPS.
+
 #### MIT License
 
 Copyright © 2015 &lt;dev@jpillora.com&gt;
