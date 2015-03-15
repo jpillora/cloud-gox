@@ -4,17 +4,18 @@ A Go (Golang) Cross-Compiler in the Cloud
 
 ### Deploy
 
-Deploy your own **cloud-gox**
+1. Deploy your own **cloud-gox**
 
-When you click this:
+	[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+2. Add both or one:
 
-You should get be prompted to set:
+	* Bintray credentials -  All webbrowser 'compiles' will be uploaded to 'bintray.com/<user>/cloud-gox/releases'
+		* Existing files are not overwritten
+	* Github credentials - Create tag webhooks sent from <user> to `https://<app>.herokuapp.com/hooks?params` will trigger a cross-compile and a release will be created
+		* `params` can contain `constraints` (defaults to `linux,darwin,windows`) and also any number of `target` compile directories (defaults to ["."]) - there should be one target per command-line utility.
 
-* Bintray credentials -  All webbrowser 'compiles' will be uploaded to 'bintray.com/<user>/cloud-gox/releases'
-* Github credentials - Create tag webhooks sent from <user> to `https://<app>.herokuapp.com/hooks?params` will trigger a cross-compile and a release will be created
-
+3. After the toolchain compiles, you can now use it
 
 #### MIT License
 
