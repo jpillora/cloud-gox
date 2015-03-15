@@ -2,8 +2,9 @@
 var config = document.querySelector("textarea");
 var log = document.querySelector("#log");
 
+var maxLogSize = 2e3;
 var seq = 0;
-var spans = [];
+var divs = [];
 
 var compile = function() {
 	var body = config.value;
@@ -80,21 +81,21 @@ var insertLines = function(cls, lines) {
 	for(var i = 0; i < lines.length; i++) {
 		var l = lines[i];
 
-		var top = spans[0];
+		var top = divs[0];
 		if(top && i === 0) {
 			top.innerText += l;
 			continue
 		}
 
-		var span = document.createElement("div");
-		span.className = cls;
-		span.innerText = l;
+		var div = document.createElement("div");
+		div.className = cls;
+		div.innerText = l;
 
-		log.insertBefore(span, top);
-		spans.unshift(span);
+		log.insertBefore(div, top);
+		divs.unshift(div);
 	}
-	while(spans.length > 1000) {
-		log.removeChild(span.pop());
+	while(divs.length > maxLogSize) {
+		log.removeChild(divs.pop());
 	}
 };
 
@@ -107,7 +108,7 @@ var seq = 0;
 (setInterval(function ping() {
 	if(ws && ws.readyState === 1)
 		ws.send("ping!");
-}, 30*1000));
+}, 15*1000));
 //auto reconnect
 (function reconnect() {
 	status("connection", "connecting", "blue");

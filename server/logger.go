@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-const maxLogSize = 10e3
+const maxLogSize = 2e3
 
 //logger events
 type messageEvent struct {
