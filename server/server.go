@@ -150,6 +150,9 @@ func (s *Server) dequeue() {
 			s.Printf("compiled '%s'\n", c.Package)
 		}
 
+		//clean up
+		os.RemoveAll(tempBuild)
+
 		c.Completed = true
 		s.curr = nil
 		s.done = append(s.done, c)

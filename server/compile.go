@@ -50,9 +50,6 @@ func (s *Server) exec(dir, prog string, args ...string) error {
 //server's compile method
 func (s *Server) compile(c *Compilation) error {
 
-	//clear last build
-	os.RemoveAll(tempBuild)
-
 	//get package
 	if err := s.exec(".", "go", "get", "-v", "-u", "-f", "-d", c.Package); err != nil {
 		return err
