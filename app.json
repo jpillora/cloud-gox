@@ -1,0 +1,21 @@
+{
+	"name": "cloud-gox",
+	"website": "https://github.com/jpillora/cloud-gox",
+	"repository": "https://github.com/jpillora/cloud-gox",
+	"env": {
+		"BUILDPACK_URL": "http://github.com/jpillora/buildpack.git",
+		"BINTRAY_USER": {
+			"description": "Bintray user"
+		},
+		"BINTRAY_API_KEY": {
+			"description": "Bintray API Key"
+		},
+		"GH_USER": {
+			"description": "Github user"
+		},
+		"GH_PASSWORD": {
+			"description": "Github password"
+		},
+
+	}
+}

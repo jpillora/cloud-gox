@@ -119,7 +119,8 @@ var seq = 0;
 	};
 
 	ws.onclose = function() {
-		status("connection", "disconnected (retry in "+t+"ms)", "red");
+		var s = Math.round(t/100)/10;
+		status("connection", "disconnected (retry in "+s+"s)", "red");
 		setTimeout(reconnect, t);
 		t *= 2;
 	};

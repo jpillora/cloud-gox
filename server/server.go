@@ -7,9 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/ActiveState/tail"
 )
+
+var tempBuild = path.Join(os.TempDir(), "build")
 
 const maxQueue = 20
 
@@ -59,6 +62,9 @@ func (s *Server) Start() error {
 	//tail -f the log for the toolchain build
 	go s.tailToolchain()
 
+	//initial empty status update
+	s.statusUpdate()
+
 	http.Handle("/", s.files)
 	http.Handle("/log", s.logger.stream)
 	http.HandleFunc("/compile", s.enqueueReq)
@@ -97,6 +103,9 @@ func (s *Server) enqueueReq(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//all "compile" requests go to a public bintray
+	c.Dest = "bintray"
+
 	err = s.enqueue(c)
 	if err != nil {
 		w.WriteHeader(400)
@@ -116,6 +125,12 @@ func (s *Server) enqueue(c *Compilation) error {
 	c.Completed = false
 	c.Queued = true
 	c.Error = ""
+
+	//default pkg root
+	if len(c.Targets) == 0 {
+		c.Targets = []string{"."}
+	}
+
 	s.q <- c
 	s.statusUpdate()
 	return nil

@@ -1,21 +1,30 @@
 package server
 
 import (
+	"errors"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
-)
 
-var BINTRAY_API_KEY = os.Getenv("BINTRAY_API_KEY")
+	"github.com/jpillora/cloud-gox/server/github"
+)
 
 type GoxConfig struct {
 	PackageVersion   string
 	ConfigVersion    string
 	PrereleaseInfo   string
 	BuildConstraints string
-	OutPath          string
-	TasksAppend      []string
-	TaskSettings     struct {
+	ArtifactsDest    string
+	ResourcesInclude string
+	Resources        struct {
+		Include string
+		Exclude string
+	}
+	TasksExclude []string
+	TasksAppend  []string
+	TaskSettings struct {
 		Bintray struct {
 			Apikey     string `json:"apikey"`
 			Package    string `json:"package"`
@@ -40,6 +49,10 @@ func (s *Server) exec(dir, prog string, args ...string) error {
 
 //server's compile method
 func (s *Server) compile(c *Compilation) error {
+
+	//clear last build
+	os.RemoveAll(tempBuild)
+
 	//get package
 	if err := s.exec(".", "go", "get", "-v", "-u", "-f", "-d", c.Package); err != nil {
 		return err
@@ -50,11 +63,46 @@ func (s *Server) compile(c *Compilation) error {
 		return err
 	}
 
-	c.writeGoxConfig(pkg)
+	//compile each target
+	for _, t := range c.Targets {
+		dir := filepath.Join(pkg, t)
+		c.writeGoxConfig(dir)
+		//run goxc with configuration
+		if err := s.exec(dir, "goxc"); err != nil {
+			return err
+		}
+	}
 
-	//run goxc with configuration
-	if err := s.exec(pkg, "goxc"); err != nil {
-		return err
+	if c.Dest == "github" {
+		v := c.Version
+		if c.Release != "" {
+			v += "-" + c.Release
+		}
+		build := filepath.Join(tempBuild, v)
+		files, err := ioutil.ReadDir(build)
+		if err != nil {
+			return err
+		}
+
+		if len(files) == 0 {
+			return errors.New("No files to upload")
+		}
+
+		rel, err := github.CreateRelease(c.Package, v)
+		if err != nil {
+			return err
+		}
+
+		for i, f := range files {
+			n := f.Name()
+			b, err := ioutil.ReadFile(filepath.Join(build, n))
+			if err != nil {
+				return err
+			}
+			rel.UploadFile(n, b)
+			s.Printf("uploaded asset #%d %s\n", i+1, f.Name())
+		}
+		s.Printf("released %s (%s)", c.Package, v)
 	}
 
 	return nil

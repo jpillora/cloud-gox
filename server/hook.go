@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,22 +31,40 @@ func (s *Server) hookReq(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h := &hook{}
-	json.Unmarshal(b, h)
+	err = json.Unmarshal(b, h)
 
-	if !h.Created || !strings.HasPrefix(h.Ref, "refs/tags/") {
+	if err != nil {
+		err = fmt.Errorf("invalid json (%s)", err)
+	} else if !h.Created || !strings.HasPrefix(h.Ref, "refs/tags/") {
+		err = errors.New("only accepts create-tag hooks")
+	} else if h.Repository.Owner.Name == "" {
+		err = errors.New("missing user")
+	} else if h.Repository.Name == "" {
+		err = errors.New("missing repo")
+	}
+
+	if err != nil {
 		w.WriteHeader(400)
-		w.Write([]byte("only accepts create tag hooks"))
+		w.Write([]byte(err.Error()))
 		return
 	}
 
 	tag := strings.TrimPrefix(h.Ref, "refs/tags/")
 
 	q := r.URL.Query()
+
+	cons := q.Get("constraints")
+	//all hooks, by default, build for all systems
+	if cons == "" {
+		cons = "linux,darwin,windows"
+	}
+
 	c := &Compilation{
 		Package:     "github.com/" + h.Repository.Owner.Name + "/" + h.Repository.Name,
 		Version:     tag,
-		Constraints: q.Get("constraints"),
+		Constraints: cons,
 		Targets:     q["target"],
+		Dest:        "github",
 	}
 
 	err = s.enqueue(c)

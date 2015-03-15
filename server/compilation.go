@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"os"
 	"path"
 )
+
+var BINTRAY_USER = os.Getenv("BINTRAY_USER")
+var BINTRAY_API_KEY = os.Getenv("BINTRAY_API_KEY")
 
 type Compilation struct {
 	//server options
@@ -44,15 +48,19 @@ func (c *Compilation) writeGoxConfig(dir string) error {
 	if c.Release != "" {
 		g.PrereleaseInfo = c.Release
 	}
-	g.OutPath = "build/{{.Dest}}{{.PS}}{{.Version}}{{.PS}}{{.Os}}_{{.Arch}}{{.PS}}{{.ExeName}}{{.Ext}}"
+	g.TasksExclude = []string{"downloads-page"}
+	g.TasksAppend = []string{}
+	g.Resources.Include = "missing-foo" //cant be empty
+	g.Resources.Exclude = "*.go"
+	g.ArtifactsDest = tempBuild
 
-	if c.Dest != "github" {
-		g.TasksAppend = []string{"bintray"}
+	if c.Dest == "bintray" {
+		g.TasksAppend = append(g.TasksAppend, "bintray")
 		g.TaskSettings.Bintray.Apikey = BINTRAY_API_KEY
 		g.TaskSettings.Bintray.Package = "releases"
 		g.TaskSettings.Bintray.Repository = "cloud-gox"
-		g.TaskSettings.Bintray.Subject = "jpillora"
-		g.TaskSettings.Bintray.User = "jpillora"
+		g.TaskSettings.Bintray.Subject = BINTRAY_USER
+		g.TaskSettings.Bintray.User = BINTRAY_USER
 	}
 
 	b, _ := json.Marshal(g)
