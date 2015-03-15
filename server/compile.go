@@ -1,11 +1,8 @@
 package server
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 )
 
@@ -16,6 +13,7 @@ type GoxConfig struct {
 	ConfigVersion    string
 	PrereleaseInfo   string
 	BuildConstraints string
+	OutPath          string
 	TasksAppend      []string
 	TaskSettings     struct {
 		Bintray struct {
@@ -52,29 +50,13 @@ func (s *Server) compile(c *Compilation) error {
 		return err
 	}
 
-	//write goxc configuration
-	g := &GoxConfig{}
-	g.ConfigVersion = "0.9"
-	g.PackageVersion = c.Version
-	g.BuildConstraints = c.Constraints
-	if c.Release != "" {
-		g.PrereleaseInfo = c.Release
-	}
-	g.TasksAppend = []string{"bintray"}
-	g.TaskSettings.Bintray.Apikey = BINTRAY_API_KEY
-	g.TaskSettings.Bintray.Package = "releases"
-	g.TaskSettings.Bintray.Repository = "cloud-gox"
-	g.TaskSettings.Bintray.Subject = "jpillora"
-	g.TaskSettings.Bintray.User = "jpillora"
-	b, _ := json.Marshal(g)
-	if err := ioutil.WriteFile(path.Join(pkg, ".goxc.json"), b, 0755); err != nil {
-		return err
-	}
+	c.writeGoxConfig(pkg)
 
 	//run goxc with configuration
 	if err := s.exec(pkg, "goxc"); err != nil {
 		return err
 	}
+
 	return nil
 }
 

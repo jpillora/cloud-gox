@@ -10,7 +10,7 @@ var compile = function() {
 	try {
 		JSON.parse(body);
 	} catch(err) {
-		info(""+err);
+		alert(""+err);
 		return;
 	}
 
@@ -18,7 +18,7 @@ var compile = function() {
 	xhr.open("POST", "/compile");
 	xhr.onload = function() {
 		if(xhr.status !== 200) {
-			info("compilation queue error: " + xhr.responseText);
+			alert(xhr.responseText);
 		}
 	};
 	xhr.send(body);
@@ -59,8 +59,8 @@ var onstatus = function(s) {
 	status("queue", s.numQueued + " items queued",
 		s.numQueued ? "blue" : "grey");
 
-	var completed = s.done ? s.done.length : 0;
-	status("completed", completed + " items completed", "blue");
+	status("completed", s.numDone + " items completed",
+		s.numDone ? "blue" : "grey");
 };
 
 var info = function(str) {

@@ -11,16 +11,19 @@ import (
 	"github.com/ActiveState/tail"
 )
 
+const maxQueue = 20
+
 //Server is an HTTP server accepting requests
 //for cross-compilation
 type Server struct {
-	Port   string
-	count  int
-	q      chan *Compilation
-	curr   *Compilation
-	done   []*Compilation
-	logger *Logger
-	files  http.Handler
+	Port      string
+	count     int
+	q         chan *Compilation
+	curr      *Compilation
+	doneCount int
+	done      []*Compilation
+	logger    *Logger
+	files     http.Handler
 }
 
 //NewServer creates a new Server
@@ -43,7 +46,7 @@ func NewServer(port string) (*Server, error) {
 
 	return &Server{
 		Port:   port,
-		q:      make(chan *Compilation),
+		q:      make(chan *Compilation, maxQueue),
 		logger: NewLogger(),
 		files:  http.FileServer(http.Dir(dir)),
 	}, nil
@@ -59,6 +62,7 @@ func (s *Server) Start() error {
 	http.Handle("/", s.files)
 	http.Handle("/log", s.logger.stream)
 	http.HandleFunc("/compile", s.enqueueReq)
+	http.HandleFunc("/hook", s.hookReq)
 
 	return http.ListenAndServe(":"+s.Port, nil)
 }
@@ -104,6 +108,9 @@ func (s *Server) enqueue(c *Compilation) error {
 	if err := c.verify(); err != nil {
 		return err
 	}
+	if len(s.q) == maxQueue {
+		return errors.New("Queue is full")
+	}
 	s.count++
 	c.ID = s.count
 	c.Completed = false
@@ -120,15 +127,18 @@ func (s *Server) dequeue() {
 		s.curr = c
 		s.statusUpdate()
 		s.Printf("compiling '%s'...\n", c.Package)
+
 		if err := s.compile(c); err != nil {
 			s.Printf("compile error '%s': %s\n", c.Package, err)
 			c.Error = err.Error()
 		} else {
 			s.Printf("compiled '%s'\n", c.Package)
 		}
+
 		c.Completed = true
 		s.curr = nil
 		s.done = append(s.done, c)
+		s.doneCount++
 		s.statusUpdate()
 	}
 }
@@ -140,8 +150,9 @@ func (s *Server) statusUpdate() {
 		d = d[len(d)-10:]
 	}
 	s.logger.statusUpdate(&statusEvent{
-		NumQueued: len(s.q),
 		Current:   s.curr,
+		NumQueued: len(s.q),
+		NumDone:   s.doneCount,
 		Done:      d,
 	})
 }

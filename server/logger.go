@@ -19,8 +19,9 @@ type messageEvent struct {
 }
 
 type statusEvent struct {
-	NumQueued int            `json:"numQueued"`
 	Current   *Compilation   `json:"current"`
+	NumQueued int            `json:"numQueued"`
+	NumDone   int            `json:"numDone"`
 	Done      []*Compilation `json:"done"`
 }
 
