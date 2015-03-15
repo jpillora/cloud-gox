@@ -5,16 +5,20 @@
 	"env": {
 		"BUILDPACK_URL": "http://github.com/jpillora/buildpack.git",
 		"BINTRAY_USER": {
-			"description": "Bintray user"
+			"description": "Bintray user",
+			"required": false
 		},
 		"BINTRAY_API_KEY": {
-			"description": "Bintray API Key"
+			"description": "Bintray API Key",
+			"required": false
 		},
 		"GH_USER": {
-			"description": "Github user"
+			"description": "Github user",
+			"required": false
 		},
 		"GH_PASS": {
-			"description": "Github password"
+			"description": "Github password",
+			"required": false
 		}
 	}
 }
