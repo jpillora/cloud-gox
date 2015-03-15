@@ -90,14 +90,17 @@ func (s *Server) compile(c *Compilation) error {
 			return err
 		}
 
-		for i, f := range files {
+		for _, f := range files {
+			if f.IsDir() {
+				continue
+			}
 			n := f.Name()
 			b, err := ioutil.ReadFile(filepath.Join(build, n))
 			if err != nil {
 				return err
 			}
 			rel.UploadFile(n, b)
-			s.Printf("uploaded asset #%d %s\n", i+1, f.Name())
+			s.Printf("uploaded asset: %s\n", n)
 		}
 		s.Printf("released %s (%s)", c.Package, v)
 	}
