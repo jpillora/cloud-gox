@@ -134,8 +134,8 @@ func CreateRelease(gopkg, tag string) (*Release, error) {
 	}{
 		tag,
 		"See **Downloads** below.\n\n" +
-			"*This is an automatic cross-compile and release by " +
-			"[cloud-gox](https://github.com/jpillora/cloud-gox)" +
+			"*This release was automatically cross-compiled and uploaded by " +
+			"[cloud-gox](https://github.com/jpillora/cloud-gox) at " +
 			time.Now().UTC().Format(time.RFC3339) + "*",
 	}
 	body := &bytes.Buffer{}

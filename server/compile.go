@@ -102,7 +102,7 @@ func (s *Server) compile(c *Compilation) error {
 			rel.UploadFile(n, b)
 			s.Printf("uploaded asset: %s\n", n)
 		}
-		s.Printf("released %s (%s)", c.Package, v)
+		s.Printf("released %s (tag %s)\n", c.Package, v)
 	}
 
 	return nil
