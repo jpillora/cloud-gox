@@ -16,23 +16,27 @@ A Go (Golang) Cross-Compiler in the Cloud
 
 1. Add either or both:
 
-	* **Bintray credentials** -  All web browser 'compiles' will be uploaded to `https://dl.bintray.com/<user>/cloud-gox/'
+	* **Bintray credentials** -  All web browser 'compiles' will be uploaded to `https://dl.bintray.com/<user>/cloud-gox/`
 		* You will need to create a `cloud-gox` repo and inside, a `releases` package
 		* Existing files are not overwritten
 	* **Github credentials** - Git tag creation webhooks sent from **user** to `https://<app>.herokuapp.com/hooks?params` will trigger a cross-compile and a release will be created
-		* `params` can contain `constraints` (defaults to `linux,darwin,windows`) and also any number of `target` compile directories (defaults to ["."]) - there should be one target per command-line utility.
+		* the Git `tag` will be used as the compile version
+		* `params` can contain `constraints` (defaults to `linux,darwin,windows`) and also any number of `target` compile directories (defaults to `["."]`) - there should be one `target` per command-line utility.
 
 1. After the toolchain compiles (`Installed commands in /app/jp/go/bin`), it's ready to use
 
 ### Notes
 
-* **cloud-gox** will use `ldflags` to set your `VERSION` variable to your compile version.
-* **cloud-gox** does not currently use authentication, if you want to keep your cloud-gox app private, use a complicated app name and always use HTTPS.
-* **cloud-gox** will log extra error information, which you can tail from Heroku with `heroku logs --tail --app <app>`.
+**cloud-gox**:
+
+* will use `ldflags` to set your `VERSION` variable to your compile version.
+* does not currently use authentication, if you want to keep your cloud-gox app private, use a complicated app name and always use HTTPS.
+* will log extra error information, which you can tail from Heroku with `heroku logs --tail --app <app>`.
+* must be use this https://github.com/jpillora/buildpack buildpack in order to run on Heroku.
 
 ### Credits
 
-Currently, cloud-gox is based on [goxc](https://github.com/laher/goxc)
+Currently, cloud-gox is based on [goxc](https://github.com/laher/goxc), though this may change after Go 1.5
 
 #### MIT License
 
