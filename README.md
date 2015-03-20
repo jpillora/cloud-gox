@@ -11,6 +11,8 @@ A Go (Golang) Cross-Compiler in the Cloud
 
 ### Deploy
 
+*Note: Currently, Mercurial `hg` is not installed in [the buildpack](https://github.com/jpillora/buildpack), it could be, though it needs a PR. This means `go get`s that pull Mercurial repos are not supported.*
+
 1. Deploy your own **cloud-gox**
 
 	[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
@@ -24,7 +26,7 @@ A Go (Golang) Cross-Compiler in the Cloud
 		* the Git `tag` will be used as the compile version
 		* `params` can contain `constraints` (defaults to `linux,darwin,windows`) and also any number of `target` compile directories (defaults to `["."]`) - there should be one `target` per command-line utility.
 
-1. After the toolchain compiles (`Installed commands in /app/jp/go/bin`), it's ready to use
+1. After the toolchain compiles, it's ready to use
 
 ### Notes
 
@@ -33,7 +35,7 @@ A Go (Golang) Cross-Compiler in the Cloud
 * will use `ldflags` to set your `VERSION` variable to your compile version.
 * does not currently use authentication, if you want to keep your cloud-gox app private, use a complicated app name and always use HTTPS.
 * will log extra error information, which you can tail from Heroku with `heroku logs --tail --app <app>`.
-* must be use this https://github.com/jpillora/buildpack buildpack in order to run on Heroku.
+* must be used with this https://github.com/jpillora/buildpack buildpack in order to run on Heroku.
 
 ### Credits
 
