@@ -5,7 +5,8 @@ A Go (Golang) Cross-Compiler in the Cloud
 ### Demo
 
 1. Visit https://cloud-gox.herokuapp.com/
-1. Compile your Go package
+1. Change `package` to `github.com/peco/peco/cmd/peco`
+1. Click `Compile`
 1. Find results https://dl.bintray.com/jpillora/cloud-gox/
 
 ### Deploy
@@ -18,8 +19,8 @@ A Go (Golang) Cross-Compiler in the Cloud
 
 	* **Bintray credentials** -  All web browser 'compiles' will be uploaded to `https://dl.bintray.com/<user>/cloud-gox/`
 		* You will need to create a `cloud-gox` repo and inside, a `releases` package
-		* Existing files are not overwritten
-	* **Github credentials** - Git tag creation webhooks sent from **user** to `https://<app>.herokuapp.com/hooks?params` will trigger a cross-compile and a release will be created
+		* Existing files are not overwritten.
+	* **Github credentials** - Github tag creation webhooks sent from **user** to `https://<app>.herokuapp.com/hooks?params` will trigger a cross-compile, create a Github release for that tag and then upload the results as release assets.
 		* the Git `tag` will be used as the compile version
 		* `params` can contain `constraints` (defaults to `linux,darwin,windows`) and also any number of `target` compile directories (defaults to `["."]`) - there should be one `target` per command-line utility.
 
