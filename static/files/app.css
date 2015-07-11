@@ -8,7 +8,6 @@ body, button, textarea {
 	font-family: monospace;
 }
 
-
 .cage {
 	padding: 20px;
 }
@@ -33,6 +32,14 @@ span.status[color=blue] { background: royalblue; color: white; }
 	margin-top: 10px;
 	padding: 10px;
 	border: thin solid grey;
+}
+
+.log .msg.out {
+	color: rgb(0, 0, 219);
+}
+
+.log .msg.err {
+	color: rgb(192, 0, 0);
 }
 
 .log pre {

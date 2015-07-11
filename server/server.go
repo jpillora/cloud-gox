@@ -5,11 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
+	"strconv"
 
-	"github.com/ActiveState/tail"
+	"github.com/jpillora/cloud-gox/release"
+	"github.com/jpillora/cloud-gox/static"
+	"github.com/jpillora/go-realtime"
 )
 
 var tempBuild = path.Join(os.TempDir(), "build")
@@ -20,70 +25,108 @@ const maxQueue = 20
 //for cross-compilation
 type Server struct {
 	Port      string
-	count     int
 	q         chan *Compilation
-	curr      *Compilation
-	doneCount int
-	done      []*Compilation
 	logger    *Logger
 	files     http.Handler
+	releasers map[string]release.ReleaseHost
+	state     serverState
+}
+
+type serverState struct {
+	realtime.Object
+	Ready     bool
+	NumQueued int
+	NumDone   int
+	NumTotal  int
+	Current   *Compilation
+	LogOffset int64
+	LogCount  int64
+	Log       map[string]*message
 }
 
 //NewServer creates a new Server
-func NewServer(port string) (*Server, error) {
-
-	if BINTRAY_API_KEY == "" {
-		return nil, errors.New("BINTRAY_API_KEY variable not set")
-	}
-
-	dir := ""
-	localPath := "static/"
-	goPath := os.Getenv("GOPATH") + "/src/github.com/jpillora/cloud-gox/static/"
-	if _, err := os.Stat(localPath); err == nil {
-		dir = localPath
-	} else if _, err := os.Stat(goPath); err == nil {
-		dir = goPath
-	} else {
-		return nil, errors.New("static files directory not found")
-	}
-
+func NewServer(port string) *Server {
 	return &Server{
-		Port:   port,
-		q:      make(chan *Compilation, maxQueue),
-		logger: NewLogger(),
-		files:  http.FileServer(http.Dir(dir)),
-	}, nil
+		Port:      port,
+		q:         make(chan *Compilation, maxQueue),
+		logger:    NewLogger(),
+		releasers: map[string]release.ReleaseHost{},
+		state: serverState{
+			Log:       map[string]*message{},
+			LogOffset: 1,
+		},
+	}
 }
 
+//Start kicks off the server
 func (s *Server) Start() error {
-	//service queue
-	go s.dequeue()
+	//start logger first! copy log messages into state
+	go s.dequeueLogs()
+	s.Printf("cloud-gox started\n")
 
-	//tail -f the log for the toolchain build
-	go s.tailToolchain()
+	if err := release.Github.Auth(); err != nil {
+		s.Printf("Github auth failture: %s\n", err)
+	} else {
+		s.releasers["github"] = release.Github
+	}
 
-	//initial empty status update
-	s.statusUpdate()
+	if err := release.Bintray.Auth(); err != nil {
+		s.Printf("Bintray auth failture: %s\n", err)
+	} else {
+		s.releasers["bintray"] = release.Bintray
+	}
 
-	http.Handle("/", s.files)
-	http.Handle("/log", s.logger.stream)
+	if len(s.releasers) == 0 {
+		return fmt.Errorf("No releasers, check logs")
+	}
+
+	//check for go tool
+	_, err := exec.LookPath("go")
+	if err != nil {
+		return fmt.Errorf("go is not installed")
+	}
+
+	//async startup sequence
+	go func() {
+		//install gox and build toolchain
+		if err := s.setupGox(); err != nil {
+			s.Printf(err.Error())
+			return
+		}
+		//ready!
+		s.state.Ready = true
+		s.state.Update()
+		//service compilation queue
+		go s.dequeue()
+	}()
+
+	rt := realtime.NewHandler()
+	rt.MustAdd("state", &s.state)
+
+	http.Handle("/realtime", rt)
 	http.HandleFunc("/compile", s.enqueueReq)
 	http.HandleFunc("/hook", s.hookReq)
+	http.Handle("/", static.FileSystemHandler())
 
 	return http.ListenAndServe(":"+s.Port, nil)
 }
 
-func (s *Server) tailToolchain() {
-	t, err := tail.TailFile("toolchain.log", tail.Config{
-		Follow: true,
-		Logger: tail.DiscardingLogger,
-	})
+func (s *Server) setupGox() error {
+
+	os.Setenv("GOROOT_BOOTSTRAP", "/usr/local/Cellar/go/1.4.2")
+
+	//check for gox tool
+	_, err := exec.LookPath("gox")
 	if err != nil {
-		return
+		if err = s.exec("", "go", "get", "github.com/mitchellh/gox"); err != nil {
+			return fmt.Errorf("Failed to go get gox\n")
+		}
 	}
-	for line := range t.Lines {
-		s.Printf("%s\n", line.Text)
+	//install cross-compilation tool chains
+	if err = s.exec("", "gox", "-build-toolchain"); err != nil {
+		return fmt.Errorf("Failed to build-toolchains for gox\n")
 	}
+	return nil
 }
 
 func (s *Server) enqueueReq(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +147,7 @@ func (s *Server) enqueueReq(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//all "compile" requests go to a public bintray
-	c.Dest = "bintray"
+	c.Releaser = "bintray"
 
 	err = s.enqueue(c)
 	if err != nil {
@@ -117,64 +160,73 @@ func (s *Server) enqueue(c *Compilation) error {
 	if err := c.verify(); err != nil {
 		return err
 	}
+
 	if len(s.q) == maxQueue {
 		return errors.New("Queue is full")
 	}
-	s.count++
-	c.ID = s.count
+
+	s.state.NumTotal++
+	c.ID = s.state.NumTotal
 	c.Completed = false
 	c.Queued = true
 	c.Error = ""
-
 	//default pkg root
 	if len(c.Targets) == 0 {
 		c.Targets = []string{"."}
 	}
 
 	s.q <- c
-	s.statusUpdate()
+	s.state.NumQueued = len(s.q)
+	s.state.Update()
 	return nil
 }
 
 func (s *Server) dequeue() {
+	//completely
 	for c := range s.q {
 		c.Queued = false
-		s.curr = c
-		s.statusUpdate()
-		s.Printf("compiling '%s'...\n", c.Package)
 
+		s.state.Current = c
+		s.state.Ready = false
+		s.state.Update()
+
+		s.Printf("compiling '%s'...\n", c.Package)
+		//run compile!
 		if err := s.compile(c); err != nil {
 			s.Printf("compile error '%s': %s\n", c.Package, err)
 			c.Error = err.Error()
 		} else {
 			s.Printf("compiled '%s'\n", c.Package)
 		}
-
 		//clean up
 		os.RemoveAll(tempBuild)
-
 		c.Completed = true
-		s.curr = nil
-		s.done = append(s.done, c)
-		s.doneCount++
-		s.statusUpdate()
+
+		s.state.Current = nil
+		s.state.NumDone++
+		s.state.Update()
 	}
 }
 
-func (s *Server) statusUpdate() {
-	//limit to latest 10
-	d := s.done
-	if len(d) > 10 {
-		d = d[len(d)-10:]
+func (s *Server) dequeueLogs() {
+	for l := range s.logger.messages {
+		log.Print(l.Message)
+		//handle insertions
+		key := strconv.FormatInt(l.ID, 10)
+		s.state.Log[key] = l
+		//handle deletions when full
+		if s.state.LogCount == maxLogSize {
+			key = strconv.FormatInt(s.state.LogOffset, 10)
+			delete(s.state.Log, key)
+			s.state.LogOffset++
+		} else {
+			s.state.LogCount++
+		}
+		s.state.Update()
 	}
-	s.logger.statusUpdate(&statusEvent{
-		Current:   s.curr,
-		NumQueued: len(s.q),
-		NumDone:   s.doneCount,
-		Done:      d,
-	})
 }
 
+//Printf a server message to the log
 func (s *Server) Printf(f string, args ...interface{}) {
 	fmt.Fprintf(s.logger, f, args...)
 }

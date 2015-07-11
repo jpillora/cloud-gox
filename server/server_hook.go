@@ -53,18 +53,18 @@ func (s *Server) hookReq(w http.ResponseWriter, r *http.Request) {
 
 	q := r.URL.Query()
 
-	cons := q.Get("constraints")
+	osarch := q["osarch"]
 	//all hooks, by default, build for all systems
-	if cons == "" {
-		cons = "linux,darwin,windows"
+	if len(osarch) == 0 {
+		osarch = []string{"linux,amd64"}
 	}
 
 	c := &Compilation{
-		Package:     "github.com/" + h.Repository.Owner.Name + "/" + h.Repository.Name,
-		Version:     tag,
-		Constraints: cons,
-		Targets:     q["target"],
-		Dest:        "github",
+		Package:  "github.com/" + h.Repository.Owner.Name + "/" + h.Repository.Name,
+		Version:  tag,
+		OSArch:   osarch,
+		Targets:  q["target"],
+		Releaser: "github",
 	}
 
 	err = s.enqueue(c)
