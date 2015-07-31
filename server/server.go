@@ -9,15 +9,12 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path"
 	"strconv"
 
 	"github.com/jpillora/cloud-gox/release"
 	"github.com/jpillora/cloud-gox/static"
 	"github.com/jpillora/go-realtime"
 )
-
-var tempBuild = path.Join(os.TempDir(), "build")
 
 const maxQueue = 20
 
@@ -69,9 +66,8 @@ func (s *Server) Start() error {
 	} else {
 		s.releasers["github"] = release.Github
 	}
-
 	if err := release.Bintray.Auth(); err != nil {
-		s.Printf("Bintray auth failture: %s\n", err)
+		// s.Printf("Bintray auth failture: %s\n", err)
 	} else {
 		s.releasers["bintray"] = release.Bintray
 	}
@@ -112,9 +108,6 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) setupGox() error {
-
-	os.Setenv("GOROOT_BOOTSTRAP", "/usr/local/Cellar/go/1.4.2")
-
 	//check for gox tool
 	_, err := exec.LookPath("gox")
 	if err != nil {
@@ -123,9 +116,9 @@ func (s *Server) setupGox() error {
 		}
 	}
 	//install cross-compilation tool chains
-	if err = s.exec("", "gox", "-build-toolchain"); err != nil {
-		return fmt.Errorf("Failed to build-toolchains for gox\n")
-	}
+	// if err = s.exec("", "gox", "-build-toolchain"); err != nil {
+	// 	return fmt.Errorf("Failed to build-toolchains for gox\n")
+	// }
 	return nil
 }
 

@@ -1,6 +1,8 @@
 
 var config = document.querySelector("textarea");
 var logElem = document.querySelector(".log");
+var connectedElem = document.querySelector("#online");
+var readyElem = document.querySelector("#ready");
 var groups = [];
 
 var rt = realtime("/realtime");
@@ -9,19 +11,29 @@ var state = {};
 rt.add("state", state, function() {
 	render();
 });
+rt.onstatus = function(online) {
+	onoff(connectedElem, online);
+};
 
 var render = function() {
+	onoff(readyElem, state.Ready);
 
-	//TODO render status
+	//remove the logs off the front and back
+	var elem;
+	var i = state.LogOffset-1;
+	while(elem = document.querySelector("#log" + (i--)))
+		elem.remove();
+	i = state.LogCount+1;
+	while(elem = document.querySelector("#log" + (i++)))
+		elem.remove();
 
-	//TODO remove items before LogOffset
-
+	//render new logs
 	for (var i = state.LogOffset; i <= state.LogCount; i++) {
 		var l = state.Log[i];
-		console.log("render", l);
 		if(l.$rendered) {
 			continue;
 		}
+		console.log("render", l);
 
 		var group = null;
 		var p = state.Log[i-1];
@@ -35,11 +47,12 @@ var render = function() {
 			group = div;
 			prepend(logElem, div);
 		}
-
 		l.$group = group;
 
 		var span = document.createElement("span");
+		span.id = "log"+i;
 		span.className = "msg " + l.type;
+		l.$span = span;
 
 		var html = l.msg.split("\n").reverse().join("</br>");
 		span.innerHTML = html;
@@ -52,12 +65,28 @@ var render = function() {
 //====================
 
 var prepend = function(parent, node) {
-	if(parent.children.length === 0) {
+	if(parent.children.length === 0)
 		parent.appendChild(node);
+	else
+		parent.insertBefore(node, parent.children[0]);
+};
+
+var toggle = function(node, className, state) {
+	if(state)
+		node.classList.add(className);
+	else
+		node.classList.remove(className);
+};
+
+var onoff = function(node, onoff) {
+	if(onoff) {
+		node.classList.add("green");
+		node.classList.remove("red");
 	} else {
-		parent.insertBefore(node, parent.children[0])
+		node.classList.remove("green");
+		node.classList.add("red");
 	}
-}
+};
 
 //====================
 

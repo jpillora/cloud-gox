@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 )
+
+var tempBuild = path.Join(os.TempDir(), "build")
 
 //server's compile method
 func (s *Server) compile(c *Compilation) error {

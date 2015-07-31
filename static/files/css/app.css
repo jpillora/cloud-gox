@@ -1,0 +1,91 @@
+html, body {
+	width: 100%;
+	padding: 0;
+	margin: 0;
+}
+
+.ui.grid {
+	padding: 10px;
+}
+
+.log {
+	font-family: monospace;
+}
+
+.ui.title.segment {
+	position: relative;
+}
+
+.statuses {
+	position: absolute;
+	right: 20px;
+	top: 15px;
+}
+
+.ui.status.label {
+	cursor: default;
+}
+
+.ui.compile.segment .controls {
+	text-align: right;
+}
+
+/*============*/
+
+.cage {
+	padding: 20px;
+}
+
+textarea {
+	width: 100%;
+	height: 120px;
+	font-size: 14px;
+}
+
+button {
+	cursor: pointer;
+}
+
+.status {
+	font-size: 11px;
+    border: thin rgba(0,0,0,0.1) solid;
+    border-radius: 3px;
+    padding: 1px 4px;
+}
+
+.status {
+	background: rgba(0, 0, 0, 0.5);
+}
+.status.red {
+	background: rgba(137, 0, 0, 0.5);
+}
+.status.green {
+	background: rgba(0, 137, 0, 0.5);
+}
+
+.cage > div {
+	margin-top: 10px;
+	padding: 10px;
+	border: thin solid grey;
+}
+
+.log .msg.out {
+	color: rgb(0, 0, 219);
+}
+
+.log .msg.err {
+	color: rgb(192, 0, 0);
+}
+
+.log pre {
+	white-space: normal;
+	width: 100%;
+}
+
+.log pre .info {
+	color: grey;
+}
+
+.log pre .print {
+	color: royalblue;
+}

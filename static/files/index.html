@@ -1,33 +1,66 @@
 <html>
+
 <head>
-	<title>Cloud GoX</title>
-	<link rel="stylesheet" href="app.css">
+    <title>Cloud Gox</title>
+    <link rel="stylesheet" href="css/semantic.min.css">
+    <link rel="stylesheet" href="css/app.css">
 </head>
+
 <body>
+    <div class="ui stackable grid">
+            <div class="sixteen wide column">
+                <div class="ui title segment">
+					<span class="ui header">Cloud Gox</span>
+					<div class="statuses">
+	                    <a class="ui status green label">Connected</a>
+	                    <a class="ui status green label">Ready</a>
+	                    <a class="ui blue label" href="https://github.com/jpillora/cloud-gox" target="_blank">
+							<i class="github icon"></i> Fork on Github
+						</a>
+					</div>
+                </div>
+            </div>
+            <div class="eight wide column">
+                <div class="ui compile segment">
+                    <form class="ui form">
+                        <div class="field">
+                            <label>Package</label>
+                            <input type="text" placeholder="github.com/user/pkg">
+                        </div>
+                        <div class="field">
+                            <label>Version</label>
+                            <input type="text" placeholder="1.0.0">
+                        </div>
+						<div class="controls">
+							<button class="ui button" type="submit">Compile</button>
+						</div>
+                    </form>
+                </div>
+            </div>
+            <div class="eight wide column">
+                <div class="ui segment">
+					<h5 class="ui header">Binaries</h5>
+                    <div class="ui list">
+                        <a class="item">
+                            <i class="download icon"></i>
+                            <div class="content">
+                                <div class="header">my_program</div>
+                                <div class="description">linux/amd64</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="sixteen wide column">
+                <div class="ui segment">
+                    <div class="log">
+                    </div>
+                </div>
+            </div>
+    </div>
 
-	<div class="cage">
-		<textarea>{
-  "package": "github.com/user/repo",
-  "version": "1.0.0",
-  "release": "",
-  "constraints": "darwin,linux,windows"
-}</textarea>
-
-		<div class="controls">
-			<button onclick="compile()">Compile</button>
-			<span class="connection status"></span>
-			<span class="current status"></span>
-			<span class="queue status"></span>
-			<span class="completed status"></span>
-			<a href="https://dl.bintray.com/jpillora/cloud-gox/" target="_blank"><button>Built binaries</button></a>
-			<a href="https://github.com/jpillora/cloud-gox" target="_blank"><button>Project on Github</button></a>
-		</div>
-
-		<div class="log">
-		</div>
-	</div>
-
-	<script src="realtime"></script>
-	<script src="app.js"></script>
+    <script src="realtime"></script>
+    <script src="app.js"></script>
 </body>
+
 </html>
