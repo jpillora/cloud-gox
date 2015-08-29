@@ -61,7 +61,7 @@
         </div>
         <div class="eight wide column">
             <div class="ui compilations segment">
-                <h5 class="ui header">Compilations</h5>
+                <h5 class="ui header">Compiled binaries</h5>
 
                 <div class="ui icon info message" ng-if="!state.Compilations || state.Compilations.length == 0">
                   <i class="left chevron icon"></i>
@@ -76,7 +76,9 @@
                   <i ng-class="{loading: !c.completed, notched: !c.completed, circle: !c.completed,
                     download: c.completed}" class="icon"></i>
                   <div class="content">
-                    <div class="header">{{ c.name }} ({{ c.version }})</div>
+                    <div class="header">
+                      <a ng-href="http://{{ c.name }}" target="_blank">{{ c.name }}</a> ({{ c.version }})
+                    </div>
                     <span ng-repeat="f in c.files" class="file">
                       <a ng-href="/download/{{ c.id }}/{{ f }}">{{ osarch(f) }}</a>
                     </span>

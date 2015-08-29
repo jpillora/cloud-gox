@@ -20,7 +20,7 @@ var tempBuild = path.Join(os.TempDir(), "cloudgox")
 //server's compile method
 func (s *goxHandler) compile(c *Compilation) error {
 
-	s.Printf("compiling '%s'...\n", c.Package)
+	s.Printf("compiling %s...\n", c.Package)
 
 	//optional releaser
 	releaser := s.releasers[c.Releaser]
@@ -38,26 +38,26 @@ func (s *goxHandler) compile(c *Compilation) error {
 	//setup temp dir
 	buildDir := filepath.Join(tempBuild, c.ID)
 	if err := os.Mkdir(buildDir, 0755); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("Failed to create build directory: %s", err)
+		return fmt.Errorf("Failed to create build directory %s", err)
 	}
 
 	pkgDir := filepath.Join(s.config.Path, "src", c.Package)
 
 	//get target package
 	if err := s.exec(".", "go", nil, "get", "-v", c.Package); err != nil {
-		return fmt.Errorf("failed to get dependencies: %s", c.Package)
+		return fmt.Errorf("failed to get dependencies %s (%s)", c.Package, err)
 	}
 	if _, err := os.Stat(pkgDir); err != nil {
-		return fmt.Errorf("failed to find package: %s", c.Package)
+		return fmt.Errorf("failed to find package %s", c.Package)
 	}
 	if c.Commitish != "" {
-		s.Printf("loading specific commit: %s\n", c.Commitish)
+		s.Printf("loading specific commit %s\n", c.Commitish)
 		//go to specific commit
 		if err := s.exec(pkgDir, "git", nil, "status"); err != nil {
-			return fmt.Errorf("failed to load commit: %s: not a git repo", c.Package)
+			return fmt.Errorf("failed to load commit %s: not a git repo", c.Package)
 		}
 		if err := s.exec(pkgDir, "git", nil, "checkout", c.Commitish); err != nil {
-			return fmt.Errorf("failed to load commit: %s: %s", c.Package, err)
+			return fmt.Errorf("failed to load commit %s: %s", c.Package, err)
 		}
 	}
 
@@ -69,7 +69,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		//get target deps
 		if targetDir != pkgDir {
 			if err := s.exec(targetDir, "go", nil, "get", "-v", "."); err != nil {
-				s.Printf("failed to get dependencies: %s\n", target)
+				s.Printf("failed to get dependencies %s\n", target)
 				continue
 			}
 		}
@@ -84,7 +84,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 			}
 			targetOut := filepath.Join(buildDir, targetFilename)
 			if _, err := os.Stat(targetDir); err != nil {
-				s.Printf("failed to find target: %s\n", target)
+				s.Printf("failed to find target %s\n", target)
 				continue
 			}
 
@@ -96,7 +96,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 			args = append(args, "-ldflags", ldflags, "-o", targetOut, ".")
 			//run goxc with configuration
 			if err := s.exec(targetDir, "go", environ{"GOOS": osname, "GOARCH": arch}, args...); err != nil {
-				s.Printf("failed to build: %s\n", targetFilename)
+				s.Printf("failed to build %s\n", targetFilename)
 				continue
 			}
 
@@ -118,25 +118,32 @@ func (s *goxHandler) compile(c *Compilation) error {
 			}
 			if rel != nil {
 				if err := rel.Upload(targetFilename, b); err == nil {
-					s.Printf("%s included asset in release: %s\n", c.Releaser, targetFilename)
+					s.Printf("%s included asset in release %s\n", c.Releaser, targetFilename)
 				} else {
-					s.Printf("%s failed to release asset: %s: %s\n", c.Releaser, targetFilename, err)
+					s.Printf("%s failed to release asset %s: %s\n", c.Releaser, targetFilename, err)
 				}
 			}
 			//swap non-gzipd with gzipd
 			if err := os.Remove(targetOut); err != nil {
-				s.Printf("asset local remove failed: %s\n", err)
+				s.Printf("asset local remove failed %s\n", err)
 				continue
 			}
 			targetOut += ".gz"
 			if err := ioutil.WriteFile(targetOut, b, 0755); err != nil {
-				s.Printf("asset local write failed: %s\n", err)
+				s.Printf("asset local write failed %s\n", err)
 				continue
 			}
 			//ready for download!
 			s.Printf("compiled %s\n", targetFilename)
 			c.Files = append(c.Files, targetFilename)
 			s.state.Update()
+		}
+	}
+
+	if c.Commitish != "" {
+		s.Printf("revert repo back to latest commit\n")
+		if err := s.exec(pkgDir, "git", nil, "checkout", "-"); err != nil {
+			s.Printf("failed to revert commit %s: %s", c.Package, err)
 		}
 	}
 

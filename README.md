@@ -16,15 +16,28 @@ A Go (golang) Cross-Compiler in the cloud
 
 1. Optionally add your **Github credentials**
 
-	Github create-tag web-hooks sent from the **specified user** to `https://<cloud-gox>/hooks?params` will create a Github release inside **the source repository** for **specified tag** and then each of the compiled binaries will be uploaded as release assets.
+	Github create-tag web-hooks sent from the **specified user** to `https://<cloud-gox>/hook?params` will create a Github release inside **the source repository** for **specified tag** and then each of the compiled binaries will be uploaded as release assets. Once you've set `GH_USER` and `GH_PASS` environment variables, you can setup a repository for automatic releases:
 
-		* the Git **tag** will be used as the compile version
-		* `params` can contain any number of `osarch` (each must be in the form `os/arch`) and also any number of `target` command-line utilities (defaults one at the package root `.`)
+	1. Go to `https://github.com/<username>/<repo>/settings/hooks`
+	1. Click the `Add Webhook` button
+	1. Set the `Payload URL` to `http://<cloud-gox-location>/hook` (see optional `params` below)
+	1. Again, click the `Add Webhook` button
+	1. Now, pushing git tags will trigger a new release and your app will be cross-compiled and uploaded to Github
+
+	You can customize your web-hook using query parameters (e.g. `/hook?foo=bar`). You can set:
+
+	* a `versionvar` parameter to change the ldflags variable (defaults to `VERSION`)
+	* any number of `osarch` parameters to specify your build platforms (each must be in the form `os/arch`)
+	* any number of `target` parameters for each command-line tool within your package (e.g. `target=cmd/foo` will build `<repo>/cmd/foo`)
+
+#### Todo
+
+* Add dynamic Godeps support
+* Verify Github signed web-hooks
 
 #### Notes
 
 * I've [forked Heroku's Go buildpack](https://github.com/jpillora/heroku-buildpack-go) in order to keep the local copy of Go
-* *TODO* Add dynamic Godeps support
 
 #### MIT License
 

@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"time"
 )
 
 type environ map[string]string
@@ -39,7 +40,23 @@ func (s *goxHandler) exec(dir, prog string, env environ, args ...string) error {
 	cmd.Env = envArr(env)
 	cmd.Stdout = s.logger.Type(id, "out")
 	cmd.Stderr = s.logger.Type(id, "err")
-	err := cmd.Run()
+	err := cmd.Start()
+	if err != nil {
+		return fmt.Errorf("command failed to start: %s", err)
+	}
+	//prepare command timeout
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+	select {
+	case <-time.After(60 * time.Second):
+		err = fmt.Errorf("command timeout")
+		cmd.Process.Kill()
+		<-done //cmd.Wait says it was killed
+	case err = <-done:
+	}
+	//check error
 	code := 0
 	if err != nil {
 		code = 1
@@ -50,9 +67,9 @@ func (s *goxHandler) exec(dir, prog string, env environ, args ...string) error {
 		}
 	}
 	if code == 0 {
-		fmt.Fprintf(cmd.Stdout, "command %s %s exited successfully\n", prog, args[0])
+		fmt.Fprintf(cmd.Stdout, "%s %s exited successfully\n", prog, args[0])
 	} else {
-		fmt.Fprintf(cmd.Stdout, "command %s %s failed with code %d\n", prog, args[0], code)
+		fmt.Fprintf(cmd.Stderr, "%s %s failed with code %d (%s)\n", prog, args[0], code, err)
 	}
 	if err != nil {
 		return err

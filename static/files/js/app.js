@@ -4,7 +4,7 @@ var app = angular.module('cloudgox', []);
 app.controller("AppController", function($scope, $http) {
 	window.cloudgox = $scope;
 	$scope.package = {
-		name: "github.com/peco/peco/cmd/peco",
+		name: "github.com/jpillora/serve",
 		version: "",
 		versionVar: "VERSION",
 		platforms: null,

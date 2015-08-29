@@ -83,8 +83,11 @@ label .tip {
 	overflow: auto;
 }
 
+.compilation .header a {
+	text-decoration: none;
+}
 .compilation .timestamp {
-	text-align: center;
+	text-align: left;
 }
 
 .ui.title.segment {

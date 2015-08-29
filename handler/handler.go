@@ -20,8 +20,8 @@ import (
 	"time"
 
 	"github.com/jpillora/cloud-gox/release"
+	"github.com/jpillora/cloud-gox/static"
 	"github.com/jpillora/go-realtime"
-	"github.com/jpillora/ytmp3/static"
 )
 
 const maxQueue = 20
