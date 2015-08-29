@@ -134,7 +134,7 @@ func New() (http.Handler, error) {
 
 	for id, r := range s.releasers {
 		if err := r.Auth(); err == nil {
-			s.Printf("%s ready authenticated\n", id)
+			s.Printf("%s authenticated\n", id)
 		} else {
 			s.Printf("%s\n", err)
 		}
