@@ -88,12 +88,8 @@ func (s *goxHandler) compile(c *Compilation) error {
 				continue
 			}
 
-			args := []string{"build", "-v"}
-			if osname != s.config.OS || arch != s.config.Arch {
-				args = append(args, "-a") //non-native targets must rebuild all
-			}
 			ldflags := "-X main." + c.VersionVar + "=" + c.Version
-			args = append(args, "-ldflags", ldflags, "-o", targetOut, ".")
+			args := []string{"build", "-v", "-ldflags", ldflags, "-o", targetOut, "."}
 			//run goxc with configuration
 			if err := s.exec(targetDir, "go", environ{"GOOS": osname, "GOARCH": arch}, args...); err != nil {
 				s.Printf("failed to build %s\n", targetFilename)
