@@ -2,13 +2,30 @@
 
 A Go (golang) Cross-Compiler in the cloud
 
+* Embedded realtime front-end
+* Automatic multi-platform Github releases
+* Uses Go 1.5 (no toolchain builds required)
+* Compile your favourite command-line tools from the browser
+
 ### Demo
 
 #### http://gox.jpillora.com/
 
+### Install
+
+**Binaries**
+
+See [the latest release](https://github.com/jpillora/cloud-gox/releases/latest)
+
+**Source**
+
+``` sh
+$ go get -v github.com/jpillora/cloud-gox
+```
+
 ### Deploy
 
-1. Deploy your own **cloud-gox**
+1. Click this button to deploy **cloud-gox** for free on Heroku
 
 	[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
@@ -16,7 +33,7 @@ A Go (golang) Cross-Compiler in the cloud
 
 1. Optionally add your **Github credentials**
 
-	Github create-tag web-hooks sent from the **specified user** to `https://<cloud-gox>/hook?params` will create a Github release inside **the source repository** for **specified tag** and then each of the compiled binaries will be uploaded as release assets. Once you've set `GH_USER` and `GH_PASS` environment variables, you can setup a repository for automatic releases:
+	Github web-hooks sent from the **specified user** to `cloud-gox` will create a new Github release inside **the source repository** for **specified tag** and then each of the compiled binaries will be uploaded as release assets. Once you've set `GH_USER` and `GH_PASS` environment variables, you can setup any of your repositories for automatic releases:
 
 	1. Go to `https://github.com/<username>/<repo>/settings/hooks`
 	1. Click the `Add Webhook` button
@@ -32,12 +49,13 @@ A Go (golang) Cross-Compiler in the cloud
 
 #### Todo
 
+* Run parallel builds
 * Add dynamic Godeps support
 * Verify Github signed web-hooks
 
 #### Notes
 
-* I've [forked Heroku's Go buildpack](https://github.com/jpillora/heroku-buildpack-go) in order to keep the local copy of Go
+I've [forked Heroku's Go buildpack](https://github.com/jpillora/heroku-buildpack-go) in order to keep the local copy of the Go tools (Heroku's version keeps them only in the build cache).
 
 #### MIT License
 
