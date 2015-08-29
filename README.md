@@ -1,6 +1,6 @@
 # Cloud Gox
 
-A Go (golang) Cross-Compiler in the Cloud
+A Go (golang) Cross-Compiler in the cloud
 
 ### Demo
 
