@@ -1,0 +1,27 @@
+{
+	"ImportPath": "github.com/jpillora/cloud-gox",
+	"GoVersion": "go1.5",
+	"Deps": [
+		{
+			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
+			"Rev": "bea323321994103859d60197d229f1a94699dde3"
+		},
+		{
+			"ImportPath": "github.com/jpillora/go-realtime",
+			"Rev": "c5c5acda239c6052c2e03d3b9427caffa45f95c4"
+		},
+		{
+			"ImportPath": "github.com/jpillora/ytmp3/static",
+			"Comment": "0.1.7",
+			"Rev": "a4ae534ba9aa97064965c695ef437ea01ce70842"
+		},
+		{
+			"ImportPath": "github.com/mattbaird/jsonpatch",
+			"Rev": "4fdfa91c27ea5cc702524e3fe7cadf8e661e2ed1"
+		},
+		{
+			"ImportPath": "golang.org/x/net/websocket",
+			"Rev": "589db58a47224e5786650dac2677b9c302bab6c2"
+		}
+	]
+}

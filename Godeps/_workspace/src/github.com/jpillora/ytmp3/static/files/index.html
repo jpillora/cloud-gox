@@ -1,0 +1,32 @@
+<html>
+<head>
+  <title>Youtube to mp3</title>
+</head>
+<body style="padding: 20px; font-family: courier;">
+  <h3>YouTube to mp3</h3></br>
+  <p>
+    Prepend a YouTube URL or YouTube video ID to:
+  </p>
+  <p>
+    <b>https://ytmp3.herokuapp.com/mp3/{ID or URL}</b>
+  </p>
+  <p>
+    For example:
+  </p>
+  <p>
+    <a id="idlink"></a></br>
+    or</br>
+    <a id="fulllink"></a></br>
+  </p>
+  <script type="text/javascript">
+  var base = location.origin + "/mp3/";
+  var id = base + "dQw4w9WgXcQ";
+  var url = base + "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+  idlink.setAttribute("href", id);
+  idlink.innerHTML = id;
+  fulllink.setAttribute("href", url);
+  fulllink.innerHTML = url;
+  </script>
+</body>
+</html>
