@@ -95,8 +95,14 @@ app.controller("AppController", function($scope, $http) {
 			} else {
 				var div = document.createElement("div");
 				var user = l.src !== "cloud-gox";
-				div.className = "group " + (user ? "user" : "cloudgox");
+				div.className = "group " + (user ? "user shortened" : "cloudgox");
 				div.setAttribute("src", l.src);
+
+				var ediv = angular.element(div);
+				if(user) ediv.on("click", function() {
+					ediv.toggleClass("shortened");
+				});
+
 				group = div;
 				logElem.prepend(div);
 			}

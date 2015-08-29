@@ -36,14 +36,17 @@ html, body {
 
 .log {
 	font-family: monospace;
-	padding: 0 15px 15px 15px;
+	padding: 0 15px 15px 0px;
 }
 
-.log .group.user .msg:first-child {
+.log .group.user.shortened .msg:first-child {
     display: inline;
 }
-.log .group.user .msg {
+.log .group.user.shortened .msg {
     display: none;
+}
+.log .group.user {
+    cursor: pointer;
 }
 .log .timestamp {
     color: grey;

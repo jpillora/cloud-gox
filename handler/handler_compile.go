@@ -44,7 +44,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 	pkgDir := filepath.Join(s.config.Path, "src", c.Package)
 
 	//get target package
-	if err := s.exec(".", "go", nil, "get", "-v", c.Package); err != nil {
+	if err := s.exec(".", "go", nil, "get", "-u", "-v", c.Package); err != nil {
 		return fmt.Errorf("failed to get dependencies %s (%s)", c.Package, err)
 	}
 	if _, err := os.Stat(pkgDir); err != nil {
@@ -68,7 +68,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		targetName := filepath.Base(target)
 		//get target deps
 		if targetDir != pkgDir {
-			if err := s.exec(targetDir, "go", nil, "get", "-v", "."); err != nil {
+			if err := s.exec(targetDir, "go", nil, "get", "-u", "-v", "."); err != nil {
 				s.Printf("failed to get dependencies %s\n", target)
 				continue
 			}
