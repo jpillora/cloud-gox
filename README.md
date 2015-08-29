@@ -4,7 +4,7 @@ A Go (golang) Cross-Compiler in the cloud
 
 ### Demo
 
-#### https://cloud-gox.herokuapp.com/
+#### http://gox.jpillora.com/
 
 ### Deploy
 

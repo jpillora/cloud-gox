@@ -54,7 +54,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		s.Printf("loading specific commit %s\n", c.Commitish)
 		//go to specific commit
 		if err := s.exec(pkgDir, "git", nil, "status"); err != nil {
-			return fmt.Errorf("failed to load commit %s: not a git repo", c.Package)
+			return fmt.Errorf("failed to load commit: %s: %s is not a git repo", c.Commitish, c.Package)
 		}
 		if err := s.exec(pkgDir, "git", nil, "checkout", c.Commitish); err != nil {
 			return fmt.Errorf("failed to load commit %s: %s", c.Package, err)
