@@ -1,45 +1,25 @@
-# Cloud GoX
+# Cloud Gox
 
-A Go (Golang) Cross-Compiler in the Cloud
+A Go (golang) Cross-Compiler in the Cloud
 
 ### Demo
 
-1. Visit https://cloud-gox.herokuapp.com/
-1. Change `package` to `github.com/peco/peco/cmd/peco`
-1. Click `Compile`
-1. Find results https://dl.bintray.com/jpillora/cloud-gox/
+#### https://cloud-gox.herokuapp.com/
 
 ### Deploy
-
-*Note: Currently, Mercurial `hg` is not installed in [the buildpack](https://github.com/jpillora/buildpack), it could be, though it needs a PR. This means `go get`s that pull Mercurial repos are not supported.*
 
 1. Deploy your own **cloud-gox**
 
 	[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-1. Add either or both:
+1. Optionally add **HTTP authentication credentials**
 
-	* **Bintray credentials** -  All web browser 'compiles' will be uploaded to `https://dl.bintray.com/<user>/cloud-gox/`
-		* You will need to create a `cloud-gox` repo and inside, a `releases` package
-		* Existing files are not overwritten.
-	* **Github credentials** - Github tag creation webhooks sent from **user** to `https://<app>.herokuapp.com/hooks?params` will trigger a cross-compile, create a Github release for that tag and then upload the results as release assets.
-		* the Git `tag` will be used as the compile version
-		* `params` can contain `constraints` (defaults to `linux,darwin,windows`) and also any number of `target` compile directories (defaults to `["."]`) - there should be one `target` per command-line utility.
+1. Optionally add your **Github credentials**
 
-1. After the toolchain compiles, it's ready to use
+	Github create-tag web-hooks sent from the **specified user** to `https://<cloud-gox>/hooks?params` will create a Github release inside **the source repository** for **specified tag** and then each of the compiled binaries will be uploaded as release assets.
 
-### Notes
-
-**cloud-gox**:
-
-* will use `ldflags` to set your `VERSION` variable to your compile version.
-* does not currently use authentication, if you want to keep your cloud-gox app private, use a complicated app name and always use HTTPS.
-* will log extra error information, which you can tail from Heroku with `heroku logs --tail --app <app>`.
-* must be used with this https://github.com/jpillora/buildpack buildpack in order to run on Heroku.
-
-### Credits
-
-Currently, cloud-gox is based on [goxc](https://github.com/laher/goxc), though this may change after Go 1.5
+		* the Git **tag** will be used as the compile version
+		* `params` can contain any number of `osarch` (each must be in the form `os/arch`) and also any number of `target` command-line utilities (defaults one at the package root `.`)
 
 #### MIT License
 

@@ -85,6 +85,14 @@ func (g *github) checkresp(resp *http.Response, b []byte) error {
 }
 
 func (g *github) Auth() error {
+	if g.user == "" || g.pass == "" {
+		return fmt.Errorf("Github missing authentication environment variables")
+	}
+	resp, _, err := g.dorequest("GET", "/user", nil)
+	if err != nil || resp.StatusCode != 200 {
+		return fmt.Errorf("Github authentication failed for user: %s (%d %v)", g.user, resp.StatusCode, err)
+	}
+
 	return nil
 }
 
@@ -104,28 +112,20 @@ func (g *github) Setup(pkg, tag string) (Release, error) {
 
 	releaseURL := s("/repos/%s/%s/releases", g.user, repo)
 
-	//get release
+	//get release existing
 	_, b, err := g.dorequest("GET", s("%s/tags/%s", releaseURL, tag), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	rel := &GHRelease{}
-	err = json.Unmarshal(b, rel)
-	if err != nil {
-		return nil, err
-	}
-
-	//if it already exists, delete it
-	if rel.ID > 0 {
+	if err == nil {
 		rel := &GHRelease{}
-		err := json.Unmarshal(b, rel)
+		err = json.Unmarshal(b, rel)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Invalid GET response JSON: %s", err)
 		}
-		_, _, err = g.dorequest("DELETE", s("%s/%d", releaseURL, rel.ID), nil)
-		if err != nil {
-			return nil, err
+		//if it already exists, delete it
+		if rel.ID > 0 {
+			_, _, err = g.dorequest("DELETE", s("%s/%d", releaseURL, rel.ID), nil)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to delete old release: %s", err)
+			}
 		}
 	}
 
@@ -145,13 +145,13 @@ func (g *github) Setup(pkg, tag string) (Release, error) {
 
 	_, b, err = g.dorequest("POST", releaseURL, body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create new release: %s", err)
 	}
 
-	rel = &GHRelease{github: g}
+	rel := &GHRelease{github: g}
 	err = json.Unmarshal(b, rel)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Invalid POST response JSON: %s", err)
 	}
 
 	return rel, nil

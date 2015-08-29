@@ -1,4 +1,4 @@
-package server
+package handler
 
 import "io"
 
@@ -41,7 +41,7 @@ func (l *Logger) Write(p []byte) (n int, err error) {
 	return l.WriteAs("cloud-gox", "out", p)
 }
 
-//scoped
+//scoped type
 func (l *Logger) Type(src, t string) io.Writer {
 	return &typeWriter{src, t, l}
 }

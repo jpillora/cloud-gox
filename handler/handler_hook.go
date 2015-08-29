@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"encoding/json"
@@ -12,6 +12,7 @@ import (
 
 type hook struct {
 	Ref        string
+	RefType    string `json:"ref_type"`
 	Created    bool
 	Repository struct {
 		Name  string
@@ -21,7 +22,7 @@ type hook struct {
 	}
 }
 
-func (s *Server) hookReq(w http.ResponseWriter, r *http.Request) {
+func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -50,21 +51,22 @@ func (s *Server) hookReq(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tag := strings.TrimPrefix(h.Ref, "refs/tags/")
-
 	q := r.URL.Query()
 
-	osarch := q["osarch"]
-	//all hooks, by default, build for all systems
-	if len(osarch) == 0 {
-		osarch = []string{"linux,amd64"}
+	c := &Compilation{
+		Package:    "github.com/" + h.Repository.Owner.Name + "/" + h.Repository.Name,
+		Version:    tag,
+		VersionVar: q.Get("versionvar"),
+		Commitish:  tag,
+		Targets:    q["target"],
+		Releaser:   "github",
 	}
 
-	c := &Compilation{
-		Package:  "github.com/" + h.Repository.Owner.Name + "/" + h.Repository.Name,
-		Version:  tag,
-		OSArch:   osarch,
-		Targets:  q["target"],
-		Releaser: "github",
+	//all hooks, by default, build for all systems
+	if osarch := q["osarch"]; len(osarch) > 0 {
+		c.OSArch = osarch
+	} else {
+		c.Platforms = defaultPlatforms
 	}
 
 	err = s.enqueue(c)

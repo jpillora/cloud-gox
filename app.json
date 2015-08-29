@@ -3,13 +3,12 @@
 	"website": "https://github.com/jpillora/cloud-gox",
 	"repository": "https://github.com/jpillora/cloud-gox",
 	"env": {
-		"BUILDPACK_URL": "http://github.com/jpillora/buildpack.git",
-		"BINTRAY_USER": {
-			"description": "Bintray user",
+		"HTTP_USER": {
+			"description": "HTTP authentication user",
 			"required": false
 		},
-		"BINTRAY_API_KEY": {
-			"description": "Bintray API Key",
+		"HTTP_PASS": {
+			"description": "HTTP authentication password",
 			"required": false
 		},
 		"GH_USER": {

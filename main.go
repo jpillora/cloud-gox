@@ -2,9 +2,10 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/jpillora/cloud-gox/server"
+	"github.com/jpillora/cloud-gox/handler"
 )
 
 func main() {
@@ -14,9 +15,10 @@ func main() {
 		port = "3000"
 	}
 	//run server
-	s := server.NewServer(port)
-	log.Printf("listening on %s...", port)
-	if err := s.Start(); err != nil {
+	h, err := handler.New()
+	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("listening on %s...", port)
+	log.Fatal(http.ListenAndServe(":"+port, h))
 }

@@ -6,61 +6,106 @@
     <link rel="stylesheet" href="css/app.css">
 </head>
 
-<body>
-    <div class="ui stackable grid">
-            <div class="sixteen wide column">
-                <div class="ui title segment">
-					<span class="ui header">Cloud Gox</span>
-					<div class="statuses">
-	                    <a class="ui status green label">Connected</a>
-	                    <a class="ui status green label">Ready</a>
-	                    <a class="ui blue label" href="https://github.com/jpillora/cloud-gox" target="_blank">
-							<i class="github icon"></i> Fork on Github
-						</a>
-					</div>
-                </div>
-            </div>
-            <div class="eight wide column">
-                <div class="ui compile segment">
-                    <form class="ui form">
-                        <div class="field">
-                            <label>Package</label>
-                            <input type="text" placeholder="github.com/user/pkg">
-                        </div>
-                        <div class="field">
-                            <label>Version</label>
-                            <input type="text" placeholder="1.0.0">
-                        </div>
-						<div class="controls">
-							<button class="ui button" type="submit">Compile</button>
-						</div>
-                    </form>
-                </div>
-            </div>
-            <div class="eight wide column">
-                <div class="ui segment">
-					<h5 class="ui header">Binaries</h5>
-                    <div class="ui list">
-                        <a class="item">
-                            <i class="download icon"></i>
-                            <div class="content">
-                                <div class="header">my_program</div>
-                                <div class="description">linux/amd64</div>
-                            </div>
-                        </a>
+<body ng-app="cloudgox" ng-controller="AppController">
+
+  <div class="ui stackable menu">
+    <div class="active blue item">
+      <h2 class="ui header">Cloud Gox</h2>
+    </div>
+    <div class="right menu">
+      <div class="active green item" ng-if="Connected">Connected</div>
+      <div class="active red item" ng-if="!Connected">Disconnected</div>
+      <div class="active green item" ng-if="Connected && state.Ready">Ready</div>
+      <div class="active teal item" ng-if="state.NumQueued > 0">{{ state.NumQueued }} Queued</div>
+      <div class="active blue item">Go {{ config.Version }}</div>
+      <a class="active blue item" href="https://github.com/jpillora/cloud-gox" target="_blank">
+        <i class="github icon"></i> Fork on Github
+      </a>
+    </div>
+  </div>
+    <div class="ui stackable app grid">
+        <div class="eight wide column">
+            <div class="ui compile segment">
+                <form class="ui form" ng-submit="compile()">
+                    <div class="field">
+                        <label>Package <span class="tip">The target <code>main</code> package to build</span></label>
+                        <input type="text" placeholder="github.com/user/pkg" ng-model="package.name">
                     </div>
-                </div>
-            </div>
-            <div class="sixteen wide column">
-                <div class="ui segment">
-                    <div class="log">
+                    <div class="field">
+                        <label>Commit-ish <span class="tip">A specific commit-ish within this package</span></label>
+                        <input type="text" ng-model="package.commitish">
                     </div>
+                    <div class="field">
+                        <label>Version <span class="tip">Sets the <input type="text" id="versionvar" ng-model="package.versionVar"> ld-flag</span></label>
+                        <input type="text" placeholder="1.0.0" ng-model="package.version">
+                    </div>
+                    <div class="field" ng-show="showPlatforms">
+                        <label>Platforms</label>
+                        <div class="platforms">
+                          <div ng-repeat="(osID, os) in package.platforms">
+                              <div class="osheader">{{ osID }}</div>
+                              <span ng-repeat="(archID, arch) in os" class="ui archbox checkbox" ng-class="{checked: arch }">
+                                  <input type="checkbox" id="{{osID}}{{archID}}" ng-model="package.platforms[osID][archID]">
+                                  <label for="{{osID}}{{archID}}">{{ archID }}</label>
+                              </span>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <div class="ui small button" ng-click="showPlatforms = !showPlatforms">{{ showPlatforms && 'Hide' || 'Show' }} Platforms</div>
+                        <button class="ui small primary button" type="submit" ng-disabled="!Connected">Compile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="eight wide column">
+            <div class="ui compilations segment">
+                <h5 class="ui header">Compilations</h5>
+
+                <div class="ui icon info message" ng-if="!state.Compilations || state.Compilations.length == 0">
+                  <i class="left chevron icon"></i>
+                  <div class="content">
+                    <div class="header">There are no binaries yet</div>
+                    <p>Compiled packages will appear here.</p>
+                  </div>
+                </div>
+
+                <div class="ui icon compilation message" ng-repeat="c in state.Compilations" ng-class="{
+                  info: !c.completed, negative: c.completed && c.error, positive: c.completed && !c.error }">
+                  <i ng-class="{loading: !c.completed, notched: !c.completed, circle: !c.completed,
+                    download: c.completed}" class="icon"></i>
+                  <div class="content">
+                    <div class="header">{{ c.name }} ({{ c.version }})</div>
+                    <span ng-repeat="f in c.files" class="file">
+                      <a ng-href="/download/{{ c.id }}/{{ f }}">{{ osarch(f) }}</a>
+                    </span>
+                    <div ng-show="c.error">{{ c.error }}</div>
+                    <div ng-show="c.completed" class="timestamp">{{ ago(c.completedAt) }}</div>
+                  </div>
                 </div>
             </div>
+        </div>
+        <div class="sixteen wide column">
+            <div class="ui segment">
+                <div class="log">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+      <div>
+        Go {{ config.Version }}, {{ config.OS }}/{{ config.Arch }}, {{ config.NumCPU }} available CPU{{ config.NumCPU == 1 && '' || 's' }}
+      </div>
+      <div>
+        <a href="https://github.com/jpillora" target="_blank">@jpillora</a>
+      </div>
     </div>
 
     <script src="realtime"></script>
-    <script src="app.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/app.js"></script>
 </body>
 
 </html>

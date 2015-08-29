@@ -4,12 +4,72 @@ html, body {
 	margin: 0;
 }
 
+.footer {
+	padding-right: 10px;
+	text-align: right;
+	font-style: italic;
+	font-size: 0.85em;
+}
+
+.osheader {
+	width: 80px;
+	text-decoration: underline;
+	/*font-weight: bold;*/
+}
+
+.archbox {
+	padding: 2px 10px;
+}
+
+.archbox label {
+	cursor: pointer !important;
+}
+
 .ui.grid {
 	padding: 10px;
 }
 
 .log {
 	font-family: monospace;
+	padding: 0 15px 15px 15px;
+}
+
+label .tip {
+	color: grey;
+	font-size: 0.8em;
+}
+
+#versionvar {
+	display: inline !important;
+	text-align: center;
+    width: 50px;
+	color: grey;
+    height: 20px;
+    padding: 0px;
+    border: none;
+    text-decoration: underline;
+}
+
+.file {
+	display: inline-block;
+	padding: 2px 6px;
+}
+
+.platforms {
+	padding-left: 20px;
+}
+
+.controls {
+	text-align: center;
+}
+
+.compilations.segment {
+	max-height: 600px;
+	overflow: auto;
+}
+
+.compilation .timestamp {
+	text-align: center;
 }
 
 .ui.title.segment {
@@ -22,53 +82,10 @@ html, body {
 	top: 15px;
 }
 
-.ui.status.label {
-	cursor: default;
-}
-
-.ui.compile.segment .controls {
-	text-align: right;
-}
-
-/*============*/
-
-.cage {
-	padding: 20px;
-}
-
-textarea {
-	width: 100%;
-	height: 120px;
-	font-size: 14px;
-}
 
 button {
 	cursor: pointer;
 }
-
-.status {
-	font-size: 11px;
-    border: thin rgba(0,0,0,0.1) solid;
-    border-radius: 3px;
-    padding: 1px 4px;
-}
-
-.status {
-	background: rgba(0, 0, 0, 0.5);
-}
-.status.red {
-	background: rgba(137, 0, 0, 0.5);
-}
-.status.green {
-	background: rgba(0, 137, 0, 0.5);
-}
-
-.cage > div {
-	margin-top: 10px;
-	padding: 10px;
-	border: thin solid grey;
-}
-
 .log .msg.out {
 	color: rgb(0, 0, 219);
 }
