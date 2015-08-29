@@ -153,6 +153,13 @@ func New() (http.Handler, error) {
 }
 
 func (s *goxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	path := r.URL.Path
+	if path == "/hook" {
+		s.hookReq(w, r)
+		return
+	}
 
 	if s.auth != "" {
 		if u, p, _ := r.BasicAuth(); s.auth != u+":"+p {
@@ -163,15 +170,12 @@ func (s *goxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	path := r.URL.Path
 	if path == "/realtime" {
 		s.rt.ServeHTTP(w, r)
 	} else if path == "/config" {
 		s.configReq(w, r)
 	} else if path == "/compile" {
 		s.enqueueReq(w, r)
-	} else if path == "/hook" {
-		s.hookReq(w, r)
 	} else if strings.HasPrefix(path, "/download") {
 		s.downloadReq(w, r)
 	} else {
