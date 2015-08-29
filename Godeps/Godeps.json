@@ -11,9 +11,12 @@
 			"Rev": "c5c5acda239c6052c2e03d3b9427caffa45f95c4"
 		},
 		{
-			"ImportPath": "github.com/jpillora/ytmp3/static",
-			"Comment": "0.1.7",
-			"Rev": "a4ae534ba9aa97064965c695ef437ea01ce70842"
+			"ImportPath": "github.com/jpillora/opts",
+			"Rev": "019b00bcdc616f881fc1f669d040aea7c74c295d"
+		},
+		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "6e7f843663477789fac7c02def0d0909e969b4e5"
 		},
 		{
 			"ImportPath": "github.com/mattbaird/jsonpatch",
