@@ -1,15 +1,19 @@
 package handler
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
 const maxLogSize = 2e3
 
 //logger events
 type message struct {
-	ID      int64  `json:"id"`
-	Source  string `json:"src"`
-	Type    string `json:"type"`
-	Message string `json:"msg"`
+	ID      int64     `json:"id"`
+	Source  string    `json:"src"`
+	Type    string    `json:"type"`
+	Message string    `json:"msg"`
+	Time    time.Time `json:"t"`
 }
 
 //Logger is websocket logger
@@ -32,6 +36,7 @@ func (l *Logger) WriteAs(src, t string, p []byte) (n int, err error) {
 		Source:  src,
 		Type:    t,
 		Message: string(p),
+		Time:    time.Now(),
 	}
 	return len(p), nil
 }

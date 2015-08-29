@@ -21,6 +21,11 @@ A Go (golang) Cross-Compiler in the cloud
 		* the Git **tag** will be used as the compile version
 		* `params` can contain any number of `osarch` (each must be in the form `os/arch`) and also any number of `target` command-line utilities (defaults one at the package root `.`)
 
+#### Notes
+
+* I've [forked Heroku's Go buildpack](https://github.com/jpillora/heroku-buildpack-go) in order to keep the local copy of Go
+* *TODO* Add dynamic Godeps support
+
 #### MIT License
 
 Copyright © 2015 &lt;dev@jpillora.com&gt;

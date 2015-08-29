@@ -4,6 +4,11 @@ html, body {
 	margin: 0;
 }
 
+.bar.menu {
+	margin-left: -5px;
+    margin-right: -5px;
+}
+
 .footer {
 	padding-right: 10px;
 	text-align: right;
@@ -32,6 +37,16 @@ html, body {
 .log {
 	font-family: monospace;
 	padding: 0 15px 15px 15px;
+}
+
+.log .group.user .msg:first-child {
+    display: inline;
+}
+.log .group.user .msg {
+    display: none;
+}
+.log .timestamp {
+    color: grey;
 }
 
 label .tip {

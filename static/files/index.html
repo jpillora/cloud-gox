@@ -8,7 +8,7 @@
 
 <body ng-app="cloudgox" ng-controller="AppController">
 
-  <div class="ui stackable menu">
+  <div class="ui stackable bar menu">
     <div class="active blue item">
       <h2 class="ui header">Cloud Gox</h2>
     </div>
@@ -16,6 +16,7 @@
       <div class="active green item" ng-if="Connected">Connected</div>
       <div class="active red item" ng-if="!Connected">Disconnected</div>
       <div class="active green item" ng-if="Connected && state.Ready">Ready</div>
+      <div class="active teal item" ng-if="Connected && !state.Ready">Compiling</div>
       <div class="active teal item" ng-if="state.NumQueued > 0">{{ state.NumQueued }} Queued</div>
       <div class="active blue item">Go {{ config.Version }}</div>
       <a class="active blue item" href="https://github.com/jpillora/cloud-gox" target="_blank">
@@ -32,7 +33,7 @@
                         <input type="text" placeholder="github.com/user/pkg" ng-model="package.name">
                     </div>
                     <div class="field">
-                        <label>Commit-ish <span class="tip">A specific commit-ish within this package</span></label>
+                        <label>Git Commit-ish <span class="tip">A specific Git commit within the package repository</span></label>
                         <input type="text" ng-model="package.commitish">
                     </div>
                     <div class="field">

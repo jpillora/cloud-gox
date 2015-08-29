@@ -34,7 +34,7 @@ app.controller("AppController", function($scope, $http) {
 		var data = angular.copy($scope.package);
 		if(!data.version) data.version = "1.0.0";
 		$http.post("/compile", data).then(function(resp) {
-			console.info("success", resp);
+			// console.info("success", resp);
 		}, function(resp) {
 			console.warn("failed", resp);
 		});
@@ -73,7 +73,6 @@ app.controller("AppController", function($scope, $http) {
 	$scope.groups = [];
 
 	var computeLog = function() {
-		console.log('render');
 		//remove the logs off the front and back
 		var elem;
 		var i = state.LogOffset-1;
@@ -95,7 +94,8 @@ app.controller("AppController", function($scope, $http) {
 				group = p.$group;
 			} else {
 				var div = document.createElement("div");
-				div.className = "group";
+				var user = l.src !== "cloud-gox";
+				div.className = "group " + (user ? "user" : "cloudgox");
 				div.setAttribute("src", l.src);
 				group = div;
 				logElem.prepend(div);
@@ -108,8 +108,13 @@ app.controller("AppController", function($scope, $http) {
 			span.className = "msg " + l.type;
 			l.$span = span;
 
-			var html = l.msg.split("\n").reverse().join("</br>");
-			span.innerHTML = html;
+			var html = l.msg.split("\n").filter(function(l){return !!l;}).reverse().join("</br>");
+			span.innerHTML = html + "</br>";
+
+			var timestamp = document.createElement("span");
+			timestamp.className = "timestamp";
+			timestamp.innerHTML = moment(l.t).format("YYYY/MM/DD hh:mm:ss") + "&nbsp;";
+			angular.element(span).prepend(timestamp);
 
 			angular.element(group).prepend(span);
 			l.$rendered = true;

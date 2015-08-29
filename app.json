@@ -3,6 +3,7 @@
 	"website": "https://github.com/jpillora/cloud-gox",
 	"repository": "https://github.com/jpillora/cloud-gox",
 	"env": {
+		"BUILDPACK_URL": "http://github.com/jpillora/heroku-buildpack-go.git",
 		"HTTP_USER": {
 			"description": "HTTP authentication user",
 			"required": false

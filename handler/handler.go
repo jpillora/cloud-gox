@@ -129,7 +129,7 @@ func New() (http.Handler, error) {
 	auth := os.Getenv("HTTP_USER") + ":" + os.Getenv("HTTP_PASS")
 	if auth != ":" {
 		s.auth = auth
-		s.Printf("HTTP auth is enabled\n")
+		s.Printf("http auth is enabled\n")
 	}
 
 	for id, r := range s.releasers {
@@ -262,7 +262,7 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 
 	s.state.NumTotal++
 	c.ID = randomID()
-	s.Printf("Enqueue compilation (%s #%d)\n", c.ID, s.state.NumTotal)
+	s.Printf("enqueue compilation (%s #%d)\n", c.ID, s.state.NumTotal)
 	c.Completed = false
 	c.Queued = true
 	c.Error = ""
@@ -273,9 +273,6 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 
 	s.q <- c
 	s.state.NumQueued = len(s.q) //count after enqueue
-	if !s.state.Ready {
-		s.state.NumQueued++ //include in-progress
-	}
 	s.state.Update()
 	return nil
 }
@@ -286,6 +283,7 @@ func (s *goxHandler) dequeue() {
 		s.state.Compilations = append([]*Compilation{c}, s.state.Compilations...)
 		c.Queued = false
 		s.state.Ready = false
+		s.state.NumQueued = len(s.q) //count after dequeue
 		s.state.Update()
 		//run compile!
 		if err := s.compile(c); err != nil {
@@ -296,7 +294,6 @@ func (s *goxHandler) dequeue() {
 		c.Completed = true
 		s.state.Ready = true
 		s.state.NumDone++
-		s.state.NumQueued = len(s.q) //count after dequeue
 		s.state.Update()
 	}
 }
