@@ -11,8 +11,8 @@ import (
 )
 
 type hook struct {
-	Ref string
-	// Created    bool
+	Ref        string
+	Created    bool
 	Repository struct {
 		Name  string
 		Owner struct {
@@ -35,8 +35,8 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		err = fmt.Errorf("invalid json (%s)", err)
-	} else if !strings.HasPrefix(h.Ref, "refs/tags/") {
-		err = errors.New("only accepts tag hooks")
+	} else if !h.Created || !strings.HasPrefix(h.Ref, "refs/tags/") {
+		err = errors.New("only accepts create-tag hooks")
 	} else if h.Repository.Owner.Name == "" {
 		err = errors.New("missing user")
 	} else if h.Repository.Name == "" {
