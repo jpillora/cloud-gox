@@ -63,31 +63,34 @@ func (s *goxHandler) compile(c *Compilation) error {
 
 	//compile all combinations of each target and each osarch
 	for _, t := range c.Targets {
+		target := filepath.Join(c.Package, t)
+		targetDir := filepath.Join(pkgDir, t)
+		targetName := filepath.Base(target)
+		//get target deps
+		if targetDir != pkgDir {
+			if err := s.exec(targetDir, "go", nil, "get", "-v", "."); err != nil {
+				s.Printf("failed to get dependencies: %s\n", target)
+				continue
+			}
+		}
 		for _, osarchstr := range c.OSArch {
 			osarch := strings.SplitN(osarchstr, "/", 2)
 			osname := osarch[0]
 			arch := osarch[1]
-			target := filepath.Join(c.Package, t)
-			targetDir := filepath.Join(pkgDir, t)
-			targetName := filepath.Base(target)
+
 			targetFilename := fmt.Sprintf("%s_%s_%s", targetName, osname, arch)
 			if osname == "windows" {
 				targetFilename += ".exe"
 			}
 			targetOut := filepath.Join(buildDir, targetFilename)
-
 			if _, err := os.Stat(targetDir); err != nil {
 				s.Printf("failed to find target: %s\n", target)
 				continue
 			}
-			//get target deps
-			if err := s.exec(targetDir, "go", nil, "get", "-v", "."); err != nil {
-				s.Printf("failed to get dependencies: %s\n", targetFilename)
-				continue
-			}
+
 			args := []string{"build", "-v"}
 			if osname != s.config.OS || arch != s.config.Arch {
-				args = append(args, "-a")
+				args = append(args, "-a") //non-native targets must rebuild all
 			}
 			ldflags := "-X main." + c.VersionVar + "=" + c.Version
 			args = append(args, "-ldflags", ldflags, "-o", targetOut, ".")
@@ -120,6 +123,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 					s.Printf("%s failed to release asset: %s: %s\n", c.Releaser, targetFilename, err)
 				}
 			}
+			//swap non-gzipd with gzipd
 			if err := os.Remove(targetOut); err != nil {
 				s.Printf("asset local remove failed: %s\n", err)
 				continue
@@ -129,7 +133,8 @@ func (s *goxHandler) compile(c *Compilation) error {
 				s.Printf("asset local write failed: %s\n", err)
 				continue
 			}
-			s.Printf("compiled asset: %s\n", targetFilename)
+			//ready for download!
+			s.Printf("compiled %s\n", targetFilename)
 			c.Files = append(c.Files, targetFilename)
 			s.state.Update()
 		}

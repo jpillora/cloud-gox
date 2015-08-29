@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 type environ map[string]string
@@ -37,7 +39,22 @@ func (s *goxHandler) exec(dir, prog string, env environ, args ...string) error {
 	cmd.Env = envArr(env)
 	cmd.Stdout = s.logger.Type(id, "out")
 	cmd.Stderr = s.logger.Type(id, "err")
-	if err := cmd.Run(); err != nil {
+	err := cmd.Run()
+	code := 0
+	if err != nil {
+		code = 1
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				code = status.ExitStatus()
+			}
+		}
+	}
+	if code == 0 {
+		fmt.Fprintf(cmd.Stdout, "command %s %s exited successfully\n", prog, args[0])
+	} else {
+		fmt.Fprintf(cmd.Stdout, "command %s %s failed with code %d\n", prog, args[0], code)
+	}
+	if err != nil {
 		return err
 	}
 	return nil
