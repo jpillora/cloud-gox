@@ -97,12 +97,9 @@ app.controller("AppController", function($scope, $http) {
 				var user = l.src !== "cloud-gox";
 				div.className = "group " + (user ? "user shortened" : "cloudgox");
 				div.setAttribute("src", l.src);
-
-				var ediv = angular.element(div);
-				if(user) ediv.on("click", function() {
-					ediv.toggleClass("shortened");
+				if(user) angular.element(div).on("click", function() {
+					angular.element(this).toggleClass("shortened");
 				});
-
 				group = div;
 				logElem.prepend(div);
 			}

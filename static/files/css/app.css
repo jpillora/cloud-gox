@@ -51,6 +51,11 @@ body[ng-app] {
 .log .group.user.shortened .msg {
     display: none;
 }
+
+.log .group.user.shortened .timestamp:after {
+	content: "> ";
+}
+
 .log .group.user {
     cursor: pointer;
 }
