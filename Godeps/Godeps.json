@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/jpillora/cloud-gox",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.5.1",
 	"Deps": [
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
