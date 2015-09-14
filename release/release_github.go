@@ -9,13 +9,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -67,11 +67,12 @@ func (g *github) checkresp(resp *http.Response, b []byte) error {
 	if resp.StatusCode/100 == 2 {
 		return nil
 	}
+	serr := http.StatusText(resp.StatusCode)
 	if b == nil {
 		var err error
 		b, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return errors.New("Unknown non-200 error")
+			return errors.New(serr)
 		}
 	}
 	msg := &struct {
@@ -79,9 +80,9 @@ func (g *github) checkresp(resp *http.Response, b []byte) error {
 	}{}
 	err := json.Unmarshal(b, msg)
 	if err != nil {
-		return errors.New("Unknown non-200 error")
+		return errors.New(serr)
 	}
-	return errors.New(msg.Msg)
+	return errors.New(serr + ": " + msg.Msg)
 }
 
 func (g *github) Auth() error {
@@ -164,8 +165,14 @@ type GHRelease struct {
 	UploadURL string `json:"upload_url"`
 }
 
+var ghUploadRegexp = regexp.MustCompile(`\{\?[\w,]+\}`)
+
 func (r *GHRelease) Upload(name string, contents []byte) error {
-	url := strings.TrimSuffix(r.UploadURL, "{?name}") + "?name=" + url.QueryEscape(name)
+	v := url.Values{}
+	v.Set("name", name)
+	// v.Set("label", "this is a test label")
+	url := ghUploadRegexp.ReplaceAllString(r.UploadURL, "?"+v.Encode())
+	log.Printf("url: '%s'", url)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(contents))
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("Content-Type", lookup(name))
