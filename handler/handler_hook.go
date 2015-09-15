@@ -52,18 +52,23 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 	tag := strings.TrimPrefix(h.Ref, "refs/tags/")
 	q := r.URL.Query()
 
+	targets := []string{"."}
+	if str := q.Get("target"); str != "" {
+		targets = strings.Split(str, ",")
+	}
+
 	c := &Compilation{
 		Package:    "github.com/" + h.Repository.Owner.Name + "/" + h.Repository.Name,
 		Version:    tag,
 		VersionVar: q.Get("versionvar"),
 		Commitish:  tag,
-		Targets:    q["target"],
+		Targets:    targets,
 		Releaser:   "github",
 	}
 
 	//all hooks, by default, build for all systems
-	if osarch := q["osarch"]; len(osarch) > 0 {
-		c.OSArch = osarch
+	if str := q.Get("osarch"); str != "" {
+		c.OSArch = strings.Split(str, ",")
 	} else {
 		c.Platforms = defaultPlatforms
 	}

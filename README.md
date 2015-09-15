@@ -44,8 +44,8 @@ $ go get -v github.com/jpillora/cloud-gox
 	You can customize your web-hook using query parameters (e.g. `/hook?foo=bar`). You can set:
 
 	* a `versionvar` parameter to change the ldflags variable (defaults to `VERSION`)
-	* any number of `osarch` parameters to specify your build platforms (each must be in the form `os/arch`)
-	* any number of `target` parameters for each command-line tool within your package (e.g. `target=cmd/foo` will build `<repo>/cmd/foo`)
+	* a `osarch` parameter which provides a comma separated list of build platforms, each platform must be in the form `os/arch`
+	* a `target` parameter which provides a comma separated list of each command-line tool within your package (e.g. `target=cmd/foo` will build `<repo>/cmd/foo`)
 
 #### Todo
 
