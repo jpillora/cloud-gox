@@ -129,27 +129,27 @@ app.controller("AppController", function($scope, $http) {
 			l.$rendered = true;
 		}
 	};
+});
 
-	$scope.packageURLs = function(compilation) {
-		var urls = {};
-		if(!/^([^\/]+\/[^\/]+\/[^\/]+)(\/(.+))?/.test(compilation.name)) {
-			return urls;
-		}
-		var pkg = RegExp.$1;
-		var target = RegExp.$3;
-		var gh = /^github\.com/.test(pkg);
-		var ghtree = compilation.commitish ? ("/tree/" + compilation.commitish) : "";
-		urls.repo = "http://" + pkg;
-		urls.repoName = pkg;
+app.controller("PkgURLController", function($scope) {
+	var compilation = $scope.c;
+	var urls = $scope.urls = {};
+	if(!/^([^\/]+\/[^\/]+\/[^\/]+)(\/(.+))?/.test(compilation.name)) {
+		return;
+	}
+	var pkg = RegExp.$1;
+	var target = RegExp.$3;
+	var gh = /^github\.com/.test(pkg);
+	var ghtree = compilation.commitish ? ("/tree/" + compilation.commitish) : "";
+	urls.repo = "http://" + pkg;
+	urls.repoName = pkg;
+	if(gh) {
+		urls.repo += ghtree;
+	}
+	if(target) {
 		if(gh) {
- 			urls.repo += "/" + ghtree;
+			urls.target = "http://" + pkg + (ghtree || "/tree/master") + "/" + target;
 		}
-		if(target) {
-			if(gh) {
-				urls.target = "http://" + pkg + (ghtree || "/tree/master") + "/" + target;
-			}
-			urls.targetName = target;
-		}
-		return urls;
-	};
+		urls.targetName = target;
+	}
 });

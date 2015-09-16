@@ -77,7 +77,7 @@
                   <i ng-class="{loading: !c.completed, notched: !c.completed, circle: !c.completed,
                     download: c.completed}" class="icon"></i>
                   <div class="content">
-                    <div class="header" ng-init="urls = packageURLs(c)">
+                    <div class="header" ng-controller="PkgURLController">
                       <a ng-href="{{ urls.repo }}" target="_blank">{{ urls.repoName }}</a>
                       <span ng-if="urls.targetName">/</span>
                       <span ng-if="!urls.target">{{ urls.targetName }}</span>
