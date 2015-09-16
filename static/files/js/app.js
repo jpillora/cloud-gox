@@ -79,15 +79,17 @@ app.controller("AppController", function($scope, $http) {
 	var computeLog = function() {
 		//remove the logs off the front and back
 		var elem;
-		var i = state.LogOffset-1;
+		var first = state.LogOffset;
+		var last = first + state.LogCount;
+		var i = first-1;
 		while(elem = document.querySelector("#log" + (i--)))
 			elem.remove();
-		i = state.LogCount+1;
+		i = last+1;
 		while(elem = document.querySelector("#log" + (i++)))
 			elem.remove();
 
 		//render new logs
-		for (var i = state.LogOffset; i <= state.LogCount; i++) {
+		for (var i = state.LogOffset; i <= last; i++) {
 			var l = state.Log[i];
 			if(!l || l.$rendered) {
 				continue;
