@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"mime"
 	"net/http"
 	"net/url"
@@ -170,12 +169,13 @@ var ghUploadRegexp = regexp.MustCompile(`\{\?[\w,]+\}`)
 func (r *GHRelease) Upload(name string, contents []byte) error {
 	v := url.Values{}
 	v.Set("name", name)
-	// v.Set("label", "this is a test label")
+	// v.Set("label", "")
 	url := ghUploadRegexp.ReplaceAllString(r.UploadURL, "?"+v.Encode())
-	log.Printf("url: '%s'", url)
+	// log.Printf("url: '%s'", url)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(contents))
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("Content-Type", lookup(name))
+	// req.Header.Set("Content-Encoding", "gzip")
 	req.SetBasicAuth(r.user, r.pass)
 
 	resp, err := http.DefaultClient.Do(req)
@@ -193,5 +193,8 @@ func lookup(file string) string {
 	case ".zip":
 		return "application/zip"
 	}
-	return mime.TypeByExtension(ext)
+	if t := mime.TypeByExtension(ext); t != "" {
+		return t
+	}
+	return "application/octet-stream"
 }

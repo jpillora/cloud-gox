@@ -15,10 +15,12 @@ type Compilation struct {
 	OSArch      []string  `json:"osarch"`
 	Files       []string  `json:"files"`
 	//user options
-	Package    string    `json:"name"`
-	Version    string    `json:"version"`
-	VersionVar string    `json:"versionVar"`
-	Commitish  string    `json:"commitish"`
-	Platforms  Platforms `json:"platforms"`
-	Targets    []string  `json:"targets"`
+	Package    string            `json:"name"`
+	Version    string            `json:"version"`
+	VersionVar string            `json:"versionVar"`
+	Commitish  string            `json:"commitish"`
+	CommitVar  string            `json:"commitVar"`
+	Platforms  Platforms         `json:"platforms"`
+	Targets    []string          `json:"targets"`
+	LDFlags    map[string]string `json:"ldflags"`
 }

@@ -68,7 +68,7 @@ label .tip {
 	font-size: 0.8em;
 }
 
-#versionvar {
+#root label .tip .ldflag {
 	display: inline !important;
 	text-align: center;
     width: 50px;

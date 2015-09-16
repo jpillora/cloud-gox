@@ -7,6 +7,7 @@ app.controller("AppController", function($scope, $http) {
 		name: "github.com/jpillora/serve",
 		version: "",
 		versionVar: "VERSION",
+		commitVar: "COMMIT",
 		platforms: null,
 		commitish: "",
 	}
@@ -33,10 +34,13 @@ app.controller("AppController", function($scope, $http) {
 	$scope.compile = function(foo) {
 		var data = angular.copy($scope.package);
 		if(!data.version) data.version = "1.0.0";
+		$scope.loading = true;
 		$http.post("/compile", data).then(function(resp) {
 			// console.info("success", resp);
 		}, function(resp) {
 			console.warn("failed", resp);
+		}).finally(function() {
+			$scope.loading = false;
 		});
 	};
 
@@ -85,7 +89,7 @@ app.controller("AppController", function($scope, $http) {
 		//render new logs
 		for (var i = state.LogOffset; i <= state.LogCount; i++) {
 			var l = state.Log[i];
-			if(l.$rendered) {
+			if(!l || l.$rendered) {
 				continue;
 			}
 			var group = null;
@@ -122,5 +126,28 @@ app.controller("AppController", function($scope, $http) {
 			angular.element(group).prepend(span);
 			l.$rendered = true;
 		}
+	};
+
+	$scope.packageURLs = function(compilation) {
+		var urls = {};
+		if(!/^([^\/]+\/[^\/]+\/[^\/]+)(\/(.+))?/.test(compilation.name)) {
+			return urls;
+		}
+		var pkg = RegExp.$1;
+		var target = RegExp.$3;
+		var gh = /^github\.com/.test(pkg);
+		var ghtree = compilation.commitish ? ("/tree/" + compilation.commitish) : "";
+		urls.repo = "http://" + pkg;
+		urls.repoName = pkg;
+		if(gh) {
+ 			urls.repo += "/" + ghtree;
+		}
+		if(target) {
+			if(gh) {
+				urls.target = "http://" + pkg + (ghtree || "/tree/master") + "/" + target;
+			}
+			urls.targetName = target;
+		}
+		return urls;
 	};
 });

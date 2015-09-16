@@ -247,6 +247,9 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 	if c.VersionVar == "" {
 		c.VersionVar = "VERSION"
 	}
+	if c.CommitVar == "" {
+		c.CommitVar = "COMMIT"
+	}
 	if c.Platforms != nil {
 		c.OSArch = []string{}
 		for os, arches := range c.Platforms {
@@ -263,6 +266,11 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 	if len(s.q) == maxQueue {
 		return errors.New("Queue is full")
 	}
+
+	if c.LDFlags == nil {
+		c.LDFlags = map[string]string{}
+	}
+	c.LDFlags[c.VersionVar] = c.Version
 
 	s.state.NumTotal++
 	c.ID = randomID()

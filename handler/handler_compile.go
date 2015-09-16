@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -59,6 +60,17 @@ func (s *goxHandler) compile(c *Compilation) error {
 		if err := s.exec(pkgDir, "git", nil, "checkout", c.Commitish); err != nil {
 			return fmt.Errorf("failed to load commit %s: %s", c.Package, err)
 		}
+	} else {
+		//commitish not set, attempt to find it
+		s.Printf("retrieving current commit hash\n")
+		cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
+		cmd.Dir = pkgDir
+		if out, err := cmd.Output(); err == nil {
+			c.Commitish = strings.TrimSuffix(string(out), "\n")
+		}
+	}
+	if c.Commitish != "" {
+		c.LDFlags[c.CommitVar] = c.Commitish
 	}
 
 	//compile all combinations of each target and each osarch
@@ -88,7 +100,11 @@ func (s *goxHandler) compile(c *Compilation) error {
 				continue
 			}
 
-			ldflags := "-X main." + c.VersionVar + "=" + c.Version
+			ldflags := ""
+			for k, v := range c.LDFlags {
+				ldflags += " -X main." + k + "=" + v
+			}
+
 			args := []string{"build", "-v", "-ldflags", ldflags, "-o", targetOut, "."}
 			//run goxc with configuration
 			if err := s.exec(targetDir, "go", environ{"GOOS": osname, "GOARCH": arch}, args...); err != nil {

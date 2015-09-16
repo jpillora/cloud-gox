@@ -1,16 +1,31 @@
 package release
 
-import "testing"
+import (
+	"io/ioutil"
+	"testing"
+)
 
 func TestGithub(t *testing.T) {
-	if err := Github.Auth(); err != nil {
-		t.Fatal(err)
-	}
-	r, err := Github.Setup("github.com/jpillora/cloud-torrent", "0.7.6")
+
+	//read and compress shell script
+	b, err := ioutil.ReadFile("release_github_sample.sh")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := r.Upload("foo.txt", []byte("foobar")); err != nil {
+	// buff := bytes.Buffer{}
+	// gz := gzip.NewWriter(&buff)
+	// gz.Write(b)
+	// gz.Close()
+	// b = buff.Bytes()
+
+	if err := Github.Auth(); err != nil {
+		t.Fatal(err)
+	}
+	r, err := Github.Setup("github.com/jpillora/cloud-torrent", "0.0.5")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Upload("bar", b); err != nil {
 		t.Fatal(err)
 	}
 }
