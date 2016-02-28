@@ -60,17 +60,16 @@ func (s *goxHandler) compile(c *Compilation) error {
 		if err := s.exec(pkgDir, "git", nil, "checkout", c.Commitish); err != nil {
 			return fmt.Errorf("failed to load commit %s: %s", c.Package, err)
 		}
+		c.LDFlags[c.CommitVar] = c.Commitish
 	} else {
 		//commitish not set, attempt to find it
 		s.Printf("retrieving current commit hash\n")
 		cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
 		cmd.Dir = pkgDir
 		if out, err := cmd.Output(); err == nil {
-			c.Commitish = strings.TrimSuffix(string(out), "\n")
+			currCommitish := strings.TrimSuffix(string(out), "\n")
+			c.LDFlags[currCommitish] = c.Commitish
 		}
-	}
-	if c.Commitish != "" {
-		c.LDFlags[c.CommitVar] = c.Commitish
 	}
 
 	//compile all combinations of each target and each osarch
