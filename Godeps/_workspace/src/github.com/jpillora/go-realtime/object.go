@@ -3,6 +3,7 @@ package realtime
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/mattbaird/jsonpatch"
@@ -10,6 +11,9 @@ import (
 
 type key string
 
+//an Object is embedded into a parent marshallable struct.
+//an Object has N subscribers.
+//when the parent changes, it is marshalled and sent to each subscriber.
 type Object struct {
 	mut         sync.Mutex //protects all object fields
 	added       bool
@@ -47,8 +51,8 @@ func (o *Object) Update() {
 
 type update struct {
 	Key     key
-	Delta   bool `json:",omitempty"`
-	Version int64
+	Delta   bool  `json:",omitempty"`
+	Version int64 //53 usable bits
 	Data    jsonBytes
 }
 
@@ -62,7 +66,11 @@ func (o *Object) computeUpdate() bool {
 	}
 	//mark
 	o.checked = true
-	newBytes, _ := json.Marshal(o.value)
+	newBytes, err := json.Marshal(o.value)
+	if err != nil {
+		log.Printf("go-realtime: %s: marshal failed: %s", o.key, err)
+		return false
+	}
 	//calculate change set
 	ops, _ := jsonpatch.CreatePatch(o.bytes, newBytes)
 	if len(o.bytes) > 0 && len(ops) == 0 {

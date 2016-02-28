@@ -2,8 +2,11 @@ package opts
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -11,17 +14,54 @@ var spaces = regexp.MustCompile(`\ `)
 var newlines = regexp.MustCompile(`\n`)
 
 func readable(s string) string {
-	s = spaces.ReplaceAllString(s, ".")
-	s = newlines.ReplaceAllString(s, "\\n\n")
+	s = spaces.ReplaceAllString(s, "•")
+	s = newlines.ReplaceAllString(s, "⏎\n")
 	return s
 }
 
 func check(t *testing.T, a, b interface{}) {
-	if a != b {
+	if !reflect.DeepEqual(a, b) {
 		stra := readable(fmt.Sprintf("%v", a))
 		strb := readable(fmt.Sprintf("%v", b))
-		t.Fatalf("got '%v', expected '%v'", stra, strb)
+
+		extra := ""
+		if out, ok := diffstr(stra, strb); ok {
+			extra = "\n\n" + out
+		}
+		t.Fatalf("got '%v', expected '%v'%s", stra, strb, extra)
+
 	}
+}
+
+func diffstr(a, b interface{}) (string, bool) {
+	stra, oka := a.(string)
+	strb, okb := b.(string)
+	if !oka || !okb {
+		return "", false
+	}
+	line := 1
+	char := 1
+	var diff rune
+	ra := []rune(stra)
+	rb := []rune(strb)
+	for i, a := range ra {
+		if a == '\n' {
+			line++
+			char = 1
+		} else {
+			char++
+		}
+		var b rune
+		if i < len(strb) {
+			b = rb[i]
+		}
+		if a != b {
+			log.Printf("%d:%d - %s (%x) %s (%x)", line, char, string(a), a, string(b), b)
+			a = diff
+			break
+		}
+	}
+	return fmt.Sprintf("Diff on line %d char %d (%d)", line, char, diff), true
 }
 
 func TestSimple(t *testing.T) {
@@ -51,9 +91,9 @@ func TestSubCommand(t *testing.T) {
 	//config
 	type Config struct {
 		Cmd string `type:"cmdname"`
-		//subcommand (external struct)
+		//command (external struct)
 		Foo FooConfig
-		//subcommand (inline struct)
+		//command (inline struct)
 		Bar struct {
 			Zip string
 			Zap string
@@ -76,18 +116,30 @@ func TestUnsupportedType(t *testing.T) {
 	//config
 	type Config struct {
 		Foo string
-		Bar interface{}
+		Bar map[string]bool
 	}
-
-	c := &Config{}
-
+	c := Config{}
 	//flag example parse
-	err := New(c).Process([]string{"--foo", "hello", "--bar", "world"})
-
+	err := New(&c).Process([]string{"--foo", "hello", "--bar", "world"})
 	if err == nil {
 		t.Fatal("Expected error")
 	}
-	check(t, err.Error(), "Struct field 'Bar' has unsupported type: interface")
+	check(t, strings.Contains(err.Error(), "has unsupported type: map"), true)
+}
+
+func TestUnsupportedInterfaceType(t *testing.T) {
+	//config
+	type Config struct {
+		Foo string
+		Bar interface{}
+	}
+	c := Config{}
+	//flag example parse
+	err := New(&c).Process([]string{"--foo", "hello", "--bar", "world"})
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+	check(t, strings.Contains(err.Error(), "interface type must implement flag.Value"), true)
 }
 
 func TestEnv(t *testing.T) {
@@ -106,7 +158,9 @@ func TestEnv(t *testing.T) {
 	c := &Config{}
 
 	//flag example parse
-	New(c).UseEnv().Parse()
+	if err := New(c).UseEnv().Process([]string{}); err != nil {
+		t.Fatal(err)
+	}
 
 	os.Unsetenv("STR")
 	os.Unsetenv("NUM")
@@ -173,13 +227,13 @@ func TestDocBefore(t *testing.T) {
 	check(t, len(o.order), l+1)
 	check(t, o.Help(), `
   hello world this some text
-  
+
   Usage: opts [options]
-  
+
   Options:
-  --foo 
+  --foo
   --help
-  `+"\n")
+`)
 }
 
 func TestDocAfter(t *testing.T) {
@@ -200,11 +254,11 @@ func TestDocAfter(t *testing.T) {
 	check(t, len(o.order), l+1)
 	check(t, o.Help(), `
   Usage: opts [options]
-  
+
   hello world this some text
-  
+
   Options:
-  --foo 
+  --foo
   --help
-  `+"\n")
+`)
 }

@@ -2,39 +2,74 @@
 
 **A low friction command-line interface library for Go (Golang)**
 
-[![GoDoc](https://godoc.org/github.com/jpillora/opts?status.svg)](https://godoc.org/github.com/jpillora/opts)
+[![GoDoc](https://godoc.org/github.com/jpillora/opts?status.svg)](https://godoc.org/github.com/jpillora/opts)  [![CircleCI](https://circleci.com/gh/jpillora/opts.svg?style=shield&circle-token=69ef9c6ac0d8cebcb354bb85c377eceff77bfb1b)](https://circleci.com/gh/jpillora/opts)
+
+Command-line parsing should be easy. Use configuration structs:
+
+``` go
+package main
+
+import (
+	"fmt"
+
+	"github.com/jpillora/opts"
+)
+
+func main() {
+	config := struct {
+		File  string `help:"file to load"`
+		Lines int    `help:"number of lines to show"`
+	}{}
+	opts.Parse(&config)
+	fmt.Println(config)
+}
+```
+
+```
+$ go run main.go -f foo -l 12
+{foo 12}
+```
+
+### Features (with examples)
+
+* Easy to use ([simple](example/simple/))
+* Promotes separation of CLI code and library code ([separation](example/separation/))
+* Automatically generated `--help` text via struct tags `help:"Foo bar"` ([help](example/help/))
+* Commands by nesting structs ([cmds](example/cmds/))
+* Default values by modifying the struct prior to `Parse()` ([defaults](example/defaults/))
+* Default values from a JSON config file, unmarshalled via your config struct ([config](example/config/))
+* Default values from environment, defined by your field names ([env](example/env/))
+* Infers program name from package name (and optional repository link)
+* Extensible via `flag.Value` ([customtypes](example/customtypes/))
+* Customizable help text by modifying the default templates ([customhelp](example/customhelp/))
 
 ### Overview
 
-Command-line parsing should be easy. We shouldn't be forced to keep our configuration in sync with our command-line flags. `opts` attempts solve this with the goal of being as low friction as possible:
-
-``` go
-opts.Parse(&foo)
-```
-
 Internally, `opts` creates `flag.FlagSet`s from your configuration structs using `pkg/reflect`. So, given the following program:
 
-``` go
-type FooConfig struct {
+```go
+type Config struct {
 	Alpha   string        `help:"a string"`
 	Bravo   int           `help:"an int"`
 	Charlie bool          `help:"a bool"`
 	Delta   time.Duration `help:"a duration"`
 }
 
-foo := FooConfig{
+c := Config{
 	Bravo: 42,
 	Delta: 2 * time.Minute,
 }
-
-opts.Parse(&foo)
 ```
 
-`opts` would *approximately* perform:
+```go
+opts.Parse(&c)
+```
 
-``` go
-foo := FooConfig{}
-set := flag.NewFlagSet("FooConfig")
+At this point, `opts.Parse` will *approximately* perform:
+
+```go
+foo := Config{}
+set := flag.NewFlagSet("Config")
 set.StringVar(&foo.Alpha, "", "a string")
 set.IntVar(&foo.Bravo, 42, "an int")
 set.BoolVar(&foo.Charlie, false, "a bool")
@@ -58,76 +93,27 @@ $ ./foo --help
 
 ```
 
-### Features (with examples)
-
-* Easy to use ([simple](example/simple/))
-* Promotes separation of CLI code and library code ([separation](example/separation/))
-* Automatically generated `--help` text via struct tags `help:"Foo bar"` ([help](example/help/))
-* Subcommands by nesting structs ([subcmds](example/subcmds/))
-* Default values by modifying the struct prior to `Parse()` ([defaults](example/defaults/))
-* Default values from a JSON config file, unmarshalled via your config struct ([config](example/config/))
-* Default values from environment, defined by your field names ([env](example/env/))
-* Infers program name from package name (and optional repository link)
-* Extensible via `flag.Value` ([customtypes](example/customtypes/))
-* Customizable help text by modifying the default templates ([customhelp](example/customhelp/))
-
-### [Simple Example](example/simple)
-
-``` go 
-package main
-
-import (
-	"fmt"
-
-	"github.com/jpillora/opts"
-)
-
-type Config struct {
-	Foo string
-	Bar string
-}
-
-func main() {
-	c := Config{}
-	opts.Parse(&c)
-	fmt.Println(c.Foo)
-	fmt.Println(c.Bar)
-}
-```
-
-```
-$ ./myprog --foo hello --bar world
-hello
-world
-```
-
-``` plain 
-$ ./myprog --help
-
-  Usage: myprog [options]
-  
-  Options:
-  --foo, -f 
-  --bar, -b 
-  --help, -h
-  
-```
-
 ### All Examples
+
+---
 
 #### See all [example](example/)s here
 
+---
+
+### Package API
+
+See [![GoDoc](https://godoc.org/github.com/jpillora/opts?status.svg)](https://godoc.org/github.com/jpillora/opts)
+
 ### Struct Tag API
 
-`opts` relies on struct tags to "compile" your flag set. Since there are defaults in all cases however, `opts` use any struct as as a flag set, even with no struct tags defined. A struct field can contain any number of struct tag properties. These come in the form:
+**opts** tries to set sane defaults so, for the most part, you'll get the desired behaviour
+by simply providing a configuration struct. These defaults can be overridden using the struct
+tag `key:"value"`s outlined below.
 
-```
-A int `foo:"bar" ping:"pong"`
-```
+#### **Common tags**
 
-Below are the various properties available:
-
-#### **Common properties**
+These tags are usable across all `type`s:
 
 * `name` - Name is used to display the field in the help text (defaults to the field name converted to lowercase and dashes)
 * `help` - Help is used to describe the field (defaults to "")
@@ -135,21 +121,21 @@ Below are the various properties available:
 
 #### `type` defaults
 
-Each field **must** have a `type`. By default a struct field will be assigned a `type` depending on the field type:
+All fields will have a **opts** `type`. By default a struct field will be assigned a `type` depending on its field type:
 
-| Field Type    | Opt Type      |
-| ------------- |:-------------:|
-| int           | opt           |
-| string        | opt           |
-| bool          | opt           |
-| flag.Value    | opt           |
-| time.Duration | opt           |
-| []string      | arglist       |
-| struct        | subcmd        |
+| Field Type    | Default `type` | Valid `type`s      |
+| ------------- |:-------------:|:-------------------:|
+| int           | opt           | opt, arg            |
+| string        | opt           | opt, arg, cmdname   |
+| bool          | opt           | opt, arg            |
+| flag.Value    | opt           | opt, arg            |
+| time.Duration | opt           | opt, arg            |
+| []string      | arglist       | arglist             |
+| struct        | cmd           | cmd, embedded       |
 
-This default assignment can be overruled with a `type` struct tags. For example you could set a string struct field to be an `arg` field with `type:"arg"`.
+This default assignment can be overridden with a `type` struct tag. For example you could set a string struct field to be an `arg` field with `type:"arg"`.
 
-#### `type` list and type specific properties
+#### `type` specific properties
 
 * **`opt`**
 
@@ -174,17 +160,17 @@ This default assignment can be overruled with a `type` struct tags. For example 
 
 	Restricted to fields with type `[]string`
 
-* **`subcmd`**
+* **`cmd`**
 
-	A subcommand is nested `opts.Opt` instance, so its fields behave in exactly the same way as the parent struct.
+	A command is nested `opts.Opt` instance, so its fields behave in exactly the same way as the parent struct.
 
-	You can access the options of a subcommand with `prog --prog-opt X subcmd --subcmd-opt Y`
+	You can access the options of a command with `prog --prog-opt X cmd --cmd-opt Y`
 
 	Restricted to fields with type `struct`
 
 * **`cmdname`**
 
-	A special type which will assume the name of the selected subcommand
+	A special type which will assume the name of the selected command
 
 	Restricted to fields with type `string`
 
@@ -197,6 +183,11 @@ This default assignment can be overruled with a `type` struct tags. For example 
 Other CLI libraries which infer flags from struct tags:
 
 * https://github.com/jessevdk/go-flags is similar though it still could be simpler and more customizable.
+
+### Why
+
+Why yet another struct-based command-line library? I started this project [back in April](https://github.com/jpillora/opts/commit/b87563662e56b05fbcc326449db57a7761ef4d51)
+when the only thing around was `jessevdk/go-flags` and I wanted more customization. Now there is [tj/go-config](https://github.com/tj/go-config) and [alexflint/go-arg](https://github.com/alexflint/go-arg) and still, these don't yet include [nested structs](example/cmds/) and [customizable help text](example/customhelp/).
 
 ### Todo
 

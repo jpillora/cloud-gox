@@ -10,7 +10,8 @@ import (
 )
 
 type Foo struct {
-	realtime.Object
+	realtime.Object //adds sync state and an Update() method
+
 	A, B int
 	C    []int
 	D    string
@@ -63,7 +64,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "4000"
+		port = "3000"
 	}
 	log.Printf("Listening on localhost:%s...", port)
 	http.ListenAndServe(":"+port, nil)

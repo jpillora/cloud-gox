@@ -1,14 +1,13 @@
 package realtime
 
 import (
-	"encoding/json"
 	"sync"
 	"time"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
-type versions map[key]int64
+type objectVersions map[key]int64 //maps object key -> version
 
 type User struct {
 	mut       sync.Mutex //protects all user fields
@@ -16,15 +15,14 @@ type User struct {
 	ID        string
 	uptime    time.Time
 	conn      *websocket.Conn
-	versions  versions
+	versions  objectVersions
 	pending   []*update
 }
 
 func (u *User) sendPending() {
 	u.mut.Lock()
 	if len(u.pending) > 0 {
-		b, _ := json.Marshal(u.pending)
-		u.conn.Write(b)
+		u.conn.WriteJSON(u.pending)
 		u.pending = nil
 	}
 	u.mut.Unlock()

@@ -4,27 +4,27 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
-			"Rev": "bea323321994103859d60197d229f1a94699dde3"
+			"Rev": "57eb5e1fc594ad4b0b1dbea7b286d299e0cb43c2"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "b824a5d8536651ad2d690c17e270d58855dbfd02"
 		},
 		{
 			"ImportPath": "github.com/jpillora/go-realtime",
-			"Rev": "c5c5acda239c6052c2e03d3b9427caffa45f95c4"
+			"Rev": "742df9e052d11655fa039dd67412299f06f591ea"
 		},
 		{
 			"ImportPath": "github.com/jpillora/opts",
-			"Rev": "019b00bcdc616f881fc1f669d040aea7c74c295d"
+			"Rev": "bd414c582ce587985ea2c1d8bf543ec884d85a60"
 		},
 		{
 			"ImportPath": "github.com/kardianos/osext",
-			"Rev": "6e7f843663477789fac7c02def0d0909e969b4e5"
+			"Rev": "29ae4ffbc9a6fe9fb2bc5029050ce6996ea1d3bc"
 		},
 		{
 			"ImportPath": "github.com/mattbaird/jsonpatch",
 			"Rev": "4fdfa91c27ea5cc702524e3fe7cadf8e661e2ed1"
-		},
-		{
-			"ImportPath": "golang.org/x/net/websocket",
-			"Rev": "589db58a47224e5786650dac2677b9c302bab6c2"
 		}
 	]
 }

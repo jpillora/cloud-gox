@@ -90,7 +90,7 @@
         this.cleanup();
       if(!this.delay)
         this.delay = 100;
-      this.ws = new WebSocket(this.url, "rt-"+proto);
+      this.ws = new WebSocket(this.url);
       var _this = this;
       events.forEach(function(e) {
         e = "on"+e;
@@ -122,7 +122,10 @@
       this.send("ping");
     },
     subscribe: function() {
-      this.send(JSON.stringify(this.subs));
+      this.send(JSON.stringify({
+        protocol: proto,
+        objectVersions: this.subs
+      }));
     },
     onmessage: function(event) {
       var str = event.data;
@@ -183,8 +186,398 @@
 
 /*!
 * https://github.com/Starcounter-Jack/JSON-Patch
-* json-patch-duplex.js version: 0.5.2
+* json-patch-duplex.js version: 0.5.4
 * (c) 2013 Joachim Wester
 * MIT license
 */
-var __extends=this.__extends||function(a,b){function c(){this.constructor=a}for(var d in b)b.hasOwnProperty(d)&&(a[d]=b[d]);c.prototype=b.prototype,a.prototype=new c},OriginalError=Error,jsonpatch;!function(a){function b(a,c){switch(typeof a){case"undefined":case"boolean":case"string":case"number":return a===c;case"object":if(null===a)return null===c;if(g(a)){if(!g(c)||a.length!==c.length)return!1;for(var d=0,e=a.length;e>d;d++)if(!b(a[d],c[d]))return!1;return!0}var f=h(c),i=f.length;if(h(a).length!==i)return!1;for(var d=0;i>d;d++)if(!b(a[d],c[d]))return!1;return!0;default:return!1}}function c(a){for(var b,c=0,d=a.length;d>c;){b=a.charCodeAt(c);{if(!(b>=48&&57>=b))return!1;c++}}return!0}function d(a,b,d){for(var e,f,h=!1,m=0,n=b.length;n>m;){e=b[m],m++;for(var o=e.path.split("/"),p=a,q=1,r=o.length,s=void 0;;){if(f=o[q],d&&void 0===s&&(void 0===p[f]?s=o.slice(0,q).join("/"):q==r-1&&(s=e.path),void 0!==s&&this.validator(e,m-1,a,s)),q++,void 0===f&&q>=r){h=k[e.op].call(e,p,f,a);break}if(g(p)){if("-"===f)f=p.length;else{if(d&&!c(f))throw new l("Expected an unsigned base-10 integer value, making the new referenced value the array element with the zero-based index","OPERATION_PATH_ILLEGAL_ARRAY_INDEX",m-1,e.path,e);f=parseInt(f,10)}if(q>=r){if(d&&"add"===e.op&&f>p.length)throw new l("The specified index MUST NOT be greater than the number of elements in the array","OPERATION_VALUE_OUT_OF_BOUNDS",m-1,e.path,e);h=j[e.op].call(e,p,f,a);break}}else if(f&&-1!=f.indexOf("~")&&(f=f.replace(/~1/g,"/").replace(/~0/g,"~")),q>=r){h=i[e.op].call(e,p,f,a);break}p=p[f]}}return h}function e(b,c,d,e){if("object"!=typeof b||null===b||g(b))throw new l("Operation is not an object","OPERATION_NOT_AN_OBJECT",c,b,d);if(!i[b.op])throw new l("Operation `op` property is not one of operations defined in RFC-6902","OPERATION_OP_INVALID",c,b,d);if("string"!=typeof b.path)throw new l("Operation `path` property is not a string","OPERATION_PATH_INVALID",c,b,d);if(("move"===b.op||"copy"===b.op)&&"string"!=typeof b.from)throw new l("Operation `from` property is not present (applicable in `move` and `copy` operations)","OPERATION_FROM_REQUIRED",c,b,d);if(("add"===b.op||"replace"===b.op||"test"===b.op)&&void 0===b.value)throw new l("Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)","OPERATION_VALUE_REQUIRED",c,b,d);if(d)if("add"==b.op){var f=b.path.split("/").length,h=e.split("/").length;if(f!==h+1&&f!==h)throw new l("Cannot perform an `add` operation at the desired path","OPERATION_PATH_CANNOT_ADD",c,b,d)}else if("replace"===b.op||"remove"===b.op||"_get"===b.op){if(b.path!==e)throw new l("Cannot perform the operation at a path that does not exist","OPERATION_PATH_UNRESOLVABLE",c,b,d)}else if("move"===b.op||"copy"===b.op){var j={op:"_get",path:b.from,value:void 0},k=a.validate([j],d);if(k&&"OPERATION_PATH_UNRESOLVABLE"===k.name)throw new l("Cannot perform the operation from a path that does not exist","OPERATION_FROM_UNRESOLVABLE",c,b,d)}}function f(a,b){try{if(!g(a))throw new l("Patch sequence must be an array","SEQUENCE_NOT_AN_ARRAY");if(b)b=JSON.parse(JSON.stringify(b)),d.call(this,b,a,!0);else for(var c=0;c<a.length;c++)this.validator(a[c],c)}catch(e){if(e instanceof l)return e;throw e}}if(!a.apply){var g,h=function(){return Object.keys?Object.keys:function(a){var b=[];for(var c in a)a.hasOwnProperty(c)&&b.push(c);return b}}(),i={add:function(a,b){return a[b]=this.value,!0},remove:function(a,b){return delete a[b],!0},replace:function(a,b){return a[b]=this.value,!0},move:function(a,b,c){var e={op:"_get",path:this.from};return d(c,[e]),d(c,[{op:"remove",path:this.from}]),d(c,[{op:"add",path:this.path,value:e.value}]),!0},copy:function(a,b,c){var e={op:"_get",path:this.from};return d(c,[e]),d(c,[{op:"add",path:this.path,value:e.value}]),!0},test:function(a,c){return b(a[c],this.value)},_get:function(a,b){this.value=a[b]}},j={add:function(a,b){return a.splice(b,0,this.value),!0},remove:function(a,b){return a.splice(b,1),!0},replace:function(a,b){return a[b]=this.value,!0},move:i.move,copy:i.copy,test:i.test,_get:i._get},k={add:function(a){k.remove.call(this,a);for(var b in this.value)this.value.hasOwnProperty(b)&&(a[b]=this.value[b]);return!0},remove:function(a){for(var b in a)a.hasOwnProperty(b)&&i.remove.call(this,a,b);return!0},replace:function(a){return d(a,[{op:"remove",path:this.path}]),d(a,[{op:"add",path:this.path,value:this.value}]),!0},move:i.move,copy:i.copy,test:function(a){return JSON.stringify(a)===JSON.stringify(this.value)},_get:function(a){this.value=a}};g=Array.isArray?Array.isArray:function(a){return a.push&&"number"==typeof a.length},a.apply=d;var l=function(a){function b(b,c,d,e,f){a.call(this,b),this.message=b,this.name=c,this.index=d,this.operation=e,this.tree=f}return __extends(b,a),b}(OriginalError);a.JsonPatchError=l,a.Error=l,a.validator=e,a.validate=f}}(jsonpatch||(jsonpatch={})),"undefined"!=typeof exports&&(exports.apply=jsonpatch.apply,exports.validate=jsonpatch.validate,exports.validator=jsonpatch.validator,exports.JsonPatchError=jsonpatch.JsonPatchError,exports.Error=jsonpatch.Error);
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var OriginalError = Error;
+
+var jsonpatch;
+(function (jsonpatch) {
+    /* Do nothing if module is already defined.
+    Doesn't look nice, as we cannot simply put
+    `!jsonpatch &&` before this immediate function call
+    in TypeScript.
+    */
+    if (jsonpatch.apply) {
+        return;
+    }
+
+    var _objectKeys = (function () {
+        if (Object.keys)
+            return Object.keys;
+
+        return function (o) {
+            var keys = [];
+            for (var i in o) {
+                if (o.hasOwnProperty(i)) {
+                    keys.push(i);
+                }
+            }
+            return keys;
+        };
+    })();
+
+    function _equals(a, b) {
+        switch (typeof a) {
+            case 'undefined':
+            case 'boolean':
+            case 'string':
+            case 'number':
+                return a === b;
+            case 'object':
+                if (a === null)
+                    return b === null;
+                if (_isArray(a)) {
+                    if (!_isArray(b) || a.length !== b.length)
+                        return false;
+
+                    for (var i = 0, l = a.length; i < l; i++)
+                        if (!_equals(a[i], b[i]))
+                            return false;
+
+                    return true;
+                }
+
+                var bKeys = _objectKeys(b);
+                var bLength = bKeys.length;
+                if (_objectKeys(a).length !== bLength)
+                    return false;
+
+                for (var i = 0; i < bLength; i++)
+                    if (!_equals(a[i], b[i]))
+                        return false;
+
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    /* We use a Javascript hash to store each
+    function. Each hash entry (property) uses
+    the operation identifiers specified in rfc6902.
+    In this way, we can map each patch operation
+    to its dedicated function in efficient way.
+    */
+    /* The operations applicable to an object */
+    var objOps = {
+        add: function (obj, key) {
+            obj[key] = this.value;
+            return true;
+        },
+        remove: function (obj, key) {
+            delete obj[key];
+            return true;
+        },
+        replace: function (obj, key) {
+            obj[key] = this.value;
+            return true;
+        },
+        move: function (obj, key, tree) {
+            var temp = { op: "_get", path: this.from };
+            apply(tree, [temp]);
+            apply(tree, [
+                { op: "remove", path: this.from }
+            ]);
+            apply(tree, [
+                { op: "add", path: this.path, value: temp.value }
+            ]);
+            return true;
+        },
+        copy: function (obj, key, tree) {
+            var temp = { op: "_get", path: this.from };
+            apply(tree, [temp]);
+            apply(tree, [
+                { op: "add", path: this.path, value: temp.value }
+            ]);
+            return true;
+        },
+        test: function (obj, key) {
+            return _equals(obj[key], this.value);
+        },
+        _get: function (obj, key) {
+            this.value = obj[key];
+        }
+    };
+
+    /* The operations applicable to an array. Many are the same as for the object */
+    var arrOps = {
+        add: function (arr, i) {
+            arr.splice(i, 0, this.value);
+            return true;
+        },
+        remove: function (arr, i) {
+            arr.splice(i, 1);
+            return true;
+        },
+        replace: function (arr, i) {
+            arr[i] = this.value;
+            return true;
+        },
+        move: objOps.move,
+        copy: objOps.copy,
+        test: objOps.test,
+        _get: objOps._get
+    };
+
+    /* The operations applicable to object root. Many are the same as for the object */
+    var rootOps = {
+        add: function (obj) {
+            rootOps.remove.call(this, obj);
+            for (var key in this.value) {
+                if (this.value.hasOwnProperty(key)) {
+                    obj[key] = this.value[key];
+                }
+            }
+            return true;
+        },
+        remove: function (obj) {
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    objOps.remove.call(this, obj, key);
+                }
+            }
+            return true;
+        },
+        replace: function (obj) {
+            apply(obj, [
+                { op: "remove", path: this.path }
+            ]);
+            apply(obj, [
+                { op: "add", path: this.path, value: this.value }
+            ]);
+            return true;
+        },
+        move: objOps.move,
+        copy: objOps.copy,
+        test: function (obj) {
+            return (JSON.stringify(obj) === JSON.stringify(this.value));
+        },
+        _get: function (obj) {
+            this.value = obj;
+        }
+    };
+
+    var _isArray;
+    if (Array.isArray) {
+        _isArray = Array.isArray;
+    } else {
+        _isArray = function (obj) {
+            return obj.push && typeof obj.length === 'number';
+        };
+    }
+
+    //3x faster than cached /^\d+$/.test(str)
+    function isInteger(str) {
+        var i = 0;
+        var len = str.length;
+        var charCode;
+        while (i < len) {
+            charCode = str.charCodeAt(i);
+            if (charCode >= 48 && charCode <= 57) {
+                i++;
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /// Apply a json-patch operation on an object tree
+    function apply(tree, patches, validate) {
+        var result = false, p = 0, plen = patches.length, patch, key;
+        while (p < plen) {
+            patch = patches[p];
+            p++;
+
+            // Find the object
+            var path = patch.path || "";
+            var keys = path.split('/');
+            var obj = tree;
+
+            var t = 1;
+            var len = keys.length;
+            var existingPathFragment = undefined;
+
+            while (true) {
+                key = keys[t];
+
+                if (validate) {
+                    if (existingPathFragment === undefined) {
+                        if (obj[key] === undefined) {
+                            existingPathFragment = keys.slice(0, t).join('/');
+                        } else if (t == len - 1) {
+                            existingPathFragment = patch.path;
+                        }
+                        if (existingPathFragment !== undefined) {
+                            this.validator(patch, p - 1, tree, existingPathFragment);
+                        }
+                    }
+                }
+
+                t++;
+                if (key === undefined) {
+                    if (t >= len) {
+                        result = rootOps[patch.op].call(patch, obj, key, tree); // Apply patch
+                        break;
+                    }
+                }
+                if (_isArray(obj)) {
+                    if (key === '-') {
+                        key = obj.length;
+                    } else {
+                        if (validate && !isInteger(key)) {
+                            throw new JsonPatchError("Expected an unsigned base-10 integer value, making the new referenced value the array element with the zero-based index", "OPERATION_PATH_ILLEGAL_ARRAY_INDEX", p - 1, patch.path, patch);
+                        }
+                        key = parseInt(key, 10);
+                    }
+                    if (t >= len) {
+                        if (validate && patch.op === "add" && key > obj.length) {
+                            throw new JsonPatchError("The specified index MUST NOT be greater than the number of elements in the array", "OPERATION_VALUE_OUT_OF_BOUNDS", p - 1, patch.path, patch);
+                        }
+                        result = arrOps[patch.op].call(patch, obj, key, tree); // Apply patch
+                        break;
+                    }
+                } else {
+                    if (key && key.indexOf('~') != -1)
+                        key = key.replace(/~1/g, '/').replace(/~0/g, '~'); // escape chars
+                    if (t >= len) {
+                        result = objOps[patch.op].call(patch, obj, key, tree); // Apply patch
+                        break;
+                    }
+                }
+                if(!obj) {
+                  console.warning("slashes in object keys not supported");
+                  break;
+                }
+                obj = obj[key];
+            }
+        }
+        return result;
+    }
+    jsonpatch.apply = apply;
+
+    var JsonPatchError = (function (_super) {
+        __extends(JsonPatchError, _super);
+        function JsonPatchError(message, name, index, operation, tree) {
+            _super.call(this, message);
+            this.message = message;
+            this.name = name;
+            this.index = index;
+            this.operation = operation;
+            this.tree = tree;
+        }
+        return JsonPatchError;
+    })(OriginalError);
+    jsonpatch.JsonPatchError = JsonPatchError;
+
+    jsonpatch.Error = JsonPatchError;
+
+    /**
+    * Recursively checks whether an object has any undefined values inside.
+    */
+    function hasUndefined(obj) {
+        if (obj === undefined) {
+            return true;
+        }
+
+        if (typeof obj == "array" || typeof obj == "object") {
+            for (var i in obj) {
+                if (hasUndefined(obj[i])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+    * Validates a single operation. Called from `jsonpatch.validate`. Throws `JsonPatchError` in case of an error.
+    * @param {object} operation - operation object (patch)
+    * @param {number} index - index of operation in the sequence
+    * @param {object} [tree] - object where the operation is supposed to be applied
+    * @param {string} [existingPathFragment] - comes along with `tree`
+    */
+    function validator(operation, index, tree, existingPathFragment) {
+        if (typeof operation !== 'object' || operation === null || _isArray(operation)) {
+            throw new JsonPatchError('Operation is not an object', 'OPERATION_NOT_AN_OBJECT', index, operation, tree);
+        } else if (!objOps[operation.op]) {
+            throw new JsonPatchError('Operation `op` property is not one of operations defined in RFC-6902', 'OPERATION_OP_INVALID', index, operation, tree);
+        } else if (typeof operation.path !== 'string') {
+            throw new JsonPatchError('Operation `path` property is not a string', 'OPERATION_PATH_INVALID', index, operation, tree);
+        } else if ((operation.op === 'move' || operation.op === 'copy') && typeof operation.from !== 'string') {
+            throw new JsonPatchError('Operation `from` property is not present (applicable in `move` and `copy` operations)', 'OPERATION_FROM_REQUIRED', index, operation, tree);
+        } else if ((operation.op === 'add' || operation.op === 'replace' || operation.op === 'test') && operation.value === undefined) {
+            throw new JsonPatchError('Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)', 'OPERATION_VALUE_REQUIRED', index, operation, tree);
+        } else if ((operation.op === 'add' || operation.op === 'replace' || operation.op === 'test') && hasUndefined(operation.value)) {
+            throw new JsonPatchError('Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)', 'OPERATION_VALUE_CANNOT_CONTAIN_UNDEFINED', index, operation, tree);
+        } else if (tree) {
+            if (operation.op == "add") {
+                var pathLen = operation.path.split("/").length;
+                var existingPathLen = existingPathFragment.split("/").length;
+                if (pathLen !== existingPathLen + 1 && pathLen !== existingPathLen) {
+                    throw new JsonPatchError('Cannot perform an `add` operation at the desired path', 'OPERATION_PATH_CANNOT_ADD', index, operation, tree);
+                }
+            } else if (operation.op === 'replace' || operation.op === 'remove' || operation.op === '_get') {
+                if (operation.path !== existingPathFragment) {
+                    throw new JsonPatchError('Cannot perform the operation at a path that does not exist', 'OPERATION_PATH_UNRESOLVABLE', index, operation, tree);
+                }
+            } else if (operation.op === 'move' || operation.op === 'copy') {
+                var existingValue = { op: "_get", path: operation.from, value: undefined };
+                var error = jsonpatch.validate([existingValue], tree);
+                if (error && error.name === 'OPERATION_PATH_UNRESOLVABLE') {
+                    throw new JsonPatchError('Cannot perform the operation from a path that does not exist', 'OPERATION_FROM_UNRESOLVABLE', index, operation, tree);
+                }
+            }
+        }
+    }
+    jsonpatch.validator = validator;
+
+    /**
+    * Validates a sequence of operations. If `tree` parameter is provided, the sequence is additionally validated against the object tree.
+    * If error is encountered, returns a JsonPatchError object
+    * @param sequence
+    * @param tree
+    * @returns {JsonPatchError|undefined}
+    */
+    function validate(sequence, tree) {
+        try  {
+            if (!_isArray(sequence)) {
+                throw new JsonPatchError('Patch sequence must be an array', 'SEQUENCE_NOT_AN_ARRAY');
+            }
+
+            if (tree) {
+                tree = JSON.parse(JSON.stringify(tree)); //clone tree so that we can safely try applying operations
+                apply.call(this, tree, sequence, true);
+            } else {
+                for (var i = 0; i < sequence.length; i++) {
+                    this.validator(sequence[i], i);
+                }
+            }
+        } catch (e) {
+            if (e instanceof JsonPatchError) {
+                return e;
+            } else {
+                throw e;
+            }
+        }
+    }
+    jsonpatch.validate = validate;
+})(jsonpatch || (jsonpatch = {}));
+
+if (typeof exports !== "undefined") {
+    exports.apply = jsonpatch.apply;
+    exports.validate = jsonpatch.validate;
+    exports.validator = jsonpatch.validator;
+    exports.JsonPatchError = jsonpatch.JsonPatchError;
+    exports.Error = jsonpatch.Error;
+}
