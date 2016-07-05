@@ -4,7 +4,7 @@ A Go (golang) Cross-Compiler in the cloud
 
 * Embedded realtime front-end
 * Automatic multi-platform Github releases
-* Uses Go 1.5 (no toolchain builds required)
+* Uses Go 1.6 (no toolchain builds required)
 * Compile your favourite command-line tools from the browser
 
 ### Demo
