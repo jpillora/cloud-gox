@@ -75,6 +75,9 @@ func New() (http.Handler, error) {
 	if err != nil {
 		return nil, fmt.Errorf("go is not installed")
 	}
+
+	// go tool dist list
+
 	goPath := os.Getenv("GOPATH")
 	if goPath == "" {
 		return nil, fmt.Errorf("GOPATH is not set")
@@ -101,6 +104,7 @@ func New() (http.Handler, error) {
 		releasers: map[string]release.ReleaseHost{
 			"github": release.Github,
 			// "bintray": release.Bintray,
+			// "s3": TODO,
 		},
 		files: static.FileSystemHandler(),
 		rt:    rt,

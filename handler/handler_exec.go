@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -51,7 +52,7 @@ func (s *goxHandler) exec(dir, prog string, env environ, args ...string) error {
 	}()
 	select {
 	case <-time.After(120 * time.Second):
-		err = fmt.Errorf("command timeout")
+		err = errors.New("command timeout")
 		cmd.Process.Kill()
 		<-done //cmd.Wait says it was killed
 	case err = <-done:

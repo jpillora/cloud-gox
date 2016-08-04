@@ -14,12 +14,15 @@ type Compilation struct {
 	Releaser    string    `json:"releaser,omitempty"`
 	OSArch      []string  `json:"osarch"`
 	Files       []string  `json:"files"`
-	//user options
-	Package    string            `json:"name"`
+	//TODO user inline main file
+	MainContents string `json:"-"`
+	//user external package
+	Package   string `json:"name"`
+	Commitish string `json:"commitish"`
+	CommitVar string `json:"commitVar"`
+	//user compile options
 	Version    string            `json:"version"`
 	VersionVar string            `json:"versionVar"`
-	Commitish  string            `json:"commitish"`
-	CommitVar  string            `json:"commitVar"`
 	Platforms  Platforms         `json:"platforms"`
 	Targets    []string          `json:"targets"`
 	LDFlags    map[string]string `json:"ldflags"`
