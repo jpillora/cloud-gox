@@ -41,7 +41,14 @@
                         <label>Version <span class="tip">Sets the <input type="text" class="ldflag" ng-model="package.versionVar"> ld-flag. Click to edit.</span></label>
                         <input type="text" placeholder="1.0.0" ng-model="package.version">
                     </div>
-                    <div class="field" ng-show="showPlatforms">
+                    <div class="field" ng-show="showMore">
+                      <label>CGO</label>
+                      <div class="ui checkbox">
+                        <input type="checkbox" ng-model="package.cgo">
+                      	<label>Enabled by default</label>
+                      </div>
+                    </div>
+                    <div class="field" ng-show="showMore">
                         <label>Platforms</label>
                         <div class="platforms">
                           <div ng-repeat="(osID, os) in package.platforms">
@@ -54,7 +61,7 @@
                         </div>
                     </div>
                     <div class="controls">
-                        <div class="ui small button" ng-click="showPlatforms = !showPlatforms">{{ showPlatforms && 'Hide' || 'Show' }} Platforms</div>
+                        <div class="ui small button" ng-click="showMore = !showMore">{{ showMore && 'Hide' || 'Show' }} more</div>
                         <button class="ui small primary button" type="submit" ng-disabled="loading || !Connected">Compile</button>
                     </div>
                 </form>

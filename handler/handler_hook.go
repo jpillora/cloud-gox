@@ -64,13 +64,14 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 		Commitish:  tag,
 		Targets:    targets,
 		Releaser:   "github",
+		CGO:        q.Get("cgo") != "0",
 	}
 
 	//all hooks, by default, build for all systems
 	if str := q.Get("osarch"); str != "" {
 		c.OSArch = strings.Split(str, ",")
 	} else {
-		c.Platforms = defaultPlatforms
+		c.Platforms = s.config.Platforms
 	}
 
 	err = s.enqueue(c)

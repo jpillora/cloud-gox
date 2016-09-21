@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/jpillora/cloud-gox",
-	"GoVersion": "go1.7rc5",
+	"GoVersion": "go1.7.1",
 	"GodepVersion": "v74",
 	"Deps": [
 		{

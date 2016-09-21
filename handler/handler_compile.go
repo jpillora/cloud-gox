@@ -88,7 +88,6 @@ func (s *goxHandler) compile(c *Compilation) error {
 			osarch := strings.SplitN(osarchstr, "/", 2)
 			osname := osarch[0]
 			arch := osarch[1]
-
 			targetFilename := fmt.Sprintf("%s_%s_%s", targetName, osname, arch)
 			if osname == "windows" {
 				targetFilename += ".exe"
@@ -98,19 +97,25 @@ func (s *goxHandler) compile(c *Compilation) error {
 				s.Printf("failed to find target %s\n", target)
 				continue
 			}
-
 			ldflags := ""
 			for k, v := range c.LDFlags {
 				ldflags += " -X main." + k + "=" + v
 			}
-
 			args := []string{"build", "-v", "-ldflags", ldflags, "-o", targetOut, "."}
-			//run goxc with configuration
-			if err := s.exec(targetDir, "go", environ{"GOOS": osname, "GOARCH": arch}, args...); err != nil {
+			env := environ{}
+			if !c.CGO {
+				env["CGO"] = "0"
+			}
+			for k, v := range c.Env {
+				env[k] = v
+			}
+			env["GOOS"] = osname
+			env["GOARCH"] = arch
+			//run go build with cross compile configuration
+			if err := s.exec(targetDir, "go", env, args...); err != nil {
 				s.Printf("failed to build %s\n", targetFilename)
 				continue
 			}
-
 			//gzip file
 			b, err := ioutil.ReadFile(targetOut)
 			if err != nil {

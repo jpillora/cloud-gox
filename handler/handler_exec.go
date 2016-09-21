@@ -51,7 +51,7 @@ func (s *goxHandler) exec(dir, prog string, env environ, args ...string) error {
 		done <- cmd.Wait()
 	}()
 	select {
-	case <-time.After(120 * time.Second):
+	case <-time.After(300 * time.Second):
 		err = errors.New("command timeout")
 		cmd.Process.Kill()
 		<-done //cmd.Wait says it was killed

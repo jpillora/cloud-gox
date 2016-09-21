@@ -75,19 +75,18 @@ func New() (http.Handler, error) {
 	if err != nil {
 		return nil, fmt.Errorf("go is not installed")
 	}
-
-	// go tool dist list
-
+	platforms, err := GetDefaultPlatforms(goBin)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list platforms (go 1.7 or higher required)")
+	}
 	goPath := os.Getenv("GOPATH")
 	if goPath == "" {
 		return nil, fmt.Errorf("GOPATH is not set")
 	}
-
 	userMessage := ""
 	if u, err := user.Current(); err == nil {
 		userMessage = fmt.Sprintf(" (process user: %s)", u.Username)
 	}
-
 	//prepare temp dir
 	if err := os.RemoveAll(tempBuild); err != nil && !os.IsNotExist(err) {
 		return nil, fmt.Errorf("Failed to clear temporary directory: %s", err)
@@ -115,7 +114,7 @@ func New() (http.Handler, error) {
 			OS:        runtime.GOOS,
 			Arch:      runtime.GOARCH,
 			NumCPU:    runtime.NumCPU(),
-			Platforms: defaultPlatforms,
+			Platforms: platforms,
 		},
 		state: serverState{
 			Log:       map[string]*message{},

@@ -21,9 +21,11 @@ type Compilation struct {
 	Commitish string `json:"commitish"`
 	CommitVar string `json:"commitVar"`
 	//user compile options
+	CGO        bool              `json:"cgo"`
 	Version    string            `json:"version"`
 	VersionVar string            `json:"versionVar"`
 	Platforms  Platforms         `json:"platforms"`
 	Targets    []string          `json:"targets"`
 	LDFlags    map[string]string `json:"ldflags"`
+	Env        map[string]string `json:"env"`
 }
