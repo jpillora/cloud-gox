@@ -25,6 +25,9 @@ func GetDefaultPlatforms(goBin string) (Platforms, error) {
 		}
 		os := osarch[0]
 		arch := osarch[1]
+		if os == "darwin" && arch == "arm" {
+			continue //ignore silly combos
+		}
 		def := isDefaultPlatform(os, arch)
 		if archmap, ok := p[os]; ok {
 			archmap[arch] = def
