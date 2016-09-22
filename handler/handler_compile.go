@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/jpillora/cloud-gox/release"
 )
@@ -20,9 +21,8 @@ var tempBuild = path.Join(os.TempDir(), "cloudgox")
 
 //server's compile method
 func (s *goxHandler) compile(c *Compilation) error {
-
 	s.Printf("compiling %s...\n", c.Package)
-
+	c.StartedAt = time.Now()
 	//optional releaser
 	releaser := s.releasers[c.Releaser]
 	var rel release.Release
@@ -35,17 +35,19 @@ func (s *goxHandler) compile(c *Compilation) error {
 			s.Printf("%s failed to setup release %s (%s)\n", c.Releaser, c.Package, err)
 		}
 	}
-
 	//setup temp dir
 	buildDir := filepath.Join(tempBuild, c.ID)
 	if err := os.Mkdir(buildDir, 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("Failed to create build directory %s", err)
 	}
-
 	pkgDir := filepath.Join(s.config.Path, "src", c.Package)
-
 	//get target package
-	if err := s.exec(".", "go", nil, "get", "-u", "-v", c.Package); err != nil {
+	goget := []string{"get", "-v"}
+	if c.UpdatePkgs {
+		goget = append(goget, "-u")
+	}
+	goget = append(goget, c.Package)
+	if err := s.exec(".", "go", nil, goget...); err != nil {
 		return fmt.Errorf("failed to get dependencies %s (%s)", c.Package, err)
 	}
 	if _, err := os.Stat(pkgDir); err != nil {
@@ -60,7 +62,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		if err := s.exec(pkgDir, "git", nil, "checkout", c.Commitish); err != nil {
 			return fmt.Errorf("failed to load commit %s: %s", c.Package, err)
 		}
-		c.LDFlags[c.CommitVar] = c.Commitish
+		c.Variables[c.CommitVar] = c.Commitish
 	} else {
 		//commitish not set, attempt to find it
 		s.Printf("retrieving current commit hash\n")
@@ -68,7 +70,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		cmd.Dir = pkgDir
 		if out, err := cmd.Output(); err == nil {
 			currCommitish := strings.TrimSuffix(string(out), "\n")
-			c.LDFlags[currCommitish] = c.Commitish
+			c.Variables[currCommitish] = c.Commitish
 		}
 	}
 
@@ -79,7 +81,12 @@ func (s *goxHandler) compile(c *Compilation) error {
 		targetName := filepath.Base(target)
 		//get target deps
 		if targetDir != pkgDir {
-			if err := s.exec(targetDir, "go", nil, "get", "-u", "-v", "."); err != nil {
+			goget := []string{"get", "-v"}
+			if c.UpdatePkgs {
+				goget = append(goget, "-u")
+			}
+			goget = append(goget, ".")
+			if err := s.exec(targetDir, "go", nil, goget...); err != nil {
 				s.Printf("failed to get dependencies %s\n", target)
 				continue
 			}
@@ -97,14 +104,24 @@ func (s *goxHandler) compile(c *Compilation) error {
 				s.Printf("failed to find target %s\n", target)
 				continue
 			}
-			ldflags := ""
-			for k, v := range c.LDFlags {
-				ldflags += " -X main." + k + "=" + v
+			ldflags := []string{}
+			if !c.DebugInfo {
+				ldflags = append(ldflags, "-s")
 			}
-			args := []string{"build", "-v", "-ldflags", ldflags, "-o", targetOut, "."}
+			for k, v := range c.Variables {
+				ldflags = append(ldflags, "-X main."+k+"="+v)
+			}
+			args := []string{
+				"build",
+				"-a",
+				"-v",
+				"-ldflags", strings.Join(ldflags, " "),
+				"-o", targetOut,
+				".",
+			}
 			env := environ{}
 			if !c.CGO {
-				env["CGO"] = "0"
+				env["CGO_ENABLED"] = "0"
 			}
 			for k, v := range c.Env {
 				env[k] = v

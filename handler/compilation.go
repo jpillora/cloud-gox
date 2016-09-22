@@ -8,6 +8,7 @@ type Compilation struct {
 	//server options
 	ID          string    `json:"id"`
 	Queued      bool      `json:"queued"`
+	StartedAt   time.Time `json:"startedAt"`
 	Completed   bool      `json:"completed"`
 	CompletedAt time.Time `json:"completedAt"`
 	Error       string    `json:"error,omitempty"`
@@ -22,10 +23,12 @@ type Compilation struct {
 	CommitVar string `json:"commitVar"`
 	//user compile options
 	CGO        bool              `json:"cgo"`
+	DebugInfo  bool              `json:"debugInfo"` //include debug info from binary (dont use ldflag -s)
+	UpdatePkgs bool              `json:"updatePkgs"`
 	Version    string            `json:"version"`
 	VersionVar string            `json:"versionVar"`
 	Platforms  Platforms         `json:"platforms"`
 	Targets    []string          `json:"targets"`
-	LDFlags    map[string]string `json:"ldflags"`
+	Variables  map[string]string `json:"variables"`
 	Env        map[string]string `json:"env"`
 }

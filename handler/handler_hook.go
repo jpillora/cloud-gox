@@ -65,6 +65,8 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 		Targets:    targets,
 		Releaser:   "github",
 		CGO:        q.Get("cgo") != "0",
+		DebugInfo:  q.Get("debugInfo") != "0",
+		UpdatePkgs: q.Get("updatePkgs") != "0",
 	}
 
 	//all hooks, by default, build for all systems

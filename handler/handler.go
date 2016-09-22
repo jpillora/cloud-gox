@@ -270,10 +270,10 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 		return errors.New("Queue is full")
 	}
 
-	if c.LDFlags == nil {
-		c.LDFlags = map[string]string{}
+	if c.Variables == nil {
+		c.Variables = map[string]string{}
 	}
-	c.LDFlags[c.VersionVar] = c.Version
+	c.Variables[c.VersionVar] = c.Version
 
 	s.state.NumTotal++
 	c.ID = randomID()

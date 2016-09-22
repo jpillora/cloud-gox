@@ -18,7 +18,9 @@ app.controller("AppController", function($scope, $http) {
 		commitVar: "COMMIT",
 		platforms: null,
 		commitish: "",
-		cgo: true
+		cgo: true,
+		debugInfo: true,
+		updatePkgs: true
 	}
 
 	//pull server config
