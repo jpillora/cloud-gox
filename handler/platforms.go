@@ -7,9 +7,13 @@ import (
 
 type Platforms map[string]map[string]bool
 
-func isDefaultPlatform(os, arch string) bool {
-	return (os == "linux" || os == "darwin" || os == "windows") &&
-		(arch == "amd64" || arch == "arm")
+var defaultPlatforms = map[string]bool{
+	"linux/386":     true,
+	"linux/amd64":   true,
+	"linux/arm":     true,
+	"darwin/386":    true,
+	"darwin/amd64":  true,
+	"windows/amd64": true,
 }
 
 func GetDefaultPlatforms(goBin string) (Platforms, error) {
@@ -19,16 +23,13 @@ func GetDefaultPlatforms(goBin string) (Platforms, error) {
 	}
 	p := Platforms{}
 	for _, line := range strings.Split(string(out), "\n") {
+		def := defaultPlatforms[line]
 		osarch := strings.SplitN(line, "/", 2)
 		if len(osarch) != 2 {
 			continue
 		}
 		os := osarch[0]
 		arch := osarch[1]
-		if os == "darwin" && arch == "arm" {
-			continue //ignore silly combos
-		}
-		def := isDefaultPlatform(os, arch)
 		if archmap, ok := p[os]; ok {
 			archmap[arch] = def
 		} else {

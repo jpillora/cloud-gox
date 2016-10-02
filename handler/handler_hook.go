@@ -64,6 +64,7 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 		Commitish:  tag,
 		Targets:    targets,
 		Releaser:   "github",
+		//default all to ON, explicit "0" required to disable
 		CGO:        q.Get("cgo") != "0",
 		DebugInfo:  q.Get("debugInfo") != "0",
 		UpdatePkgs: q.Get("updatePkgs") != "0",
