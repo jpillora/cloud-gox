@@ -58,6 +58,8 @@ func (g *github) dorequest(method, path string, body io.Reader) (*http.Response,
 	if err != nil {
 		return nil, nil, err
 	}
+	defer resp.Body.Close()
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return resp, nil, err
@@ -91,7 +93,7 @@ func (g *github) checkresp(resp *http.Response, b []byte) error {
 }
 
 func (g *github) Auth() error {
-	resp, _, err := g.dorequest("GET", "/user", nil)
+	resp, b, err := g.dorequest("GET", "/user", nil)
 	if err != nil {
 		status := ""
 		if resp != nil {
@@ -99,6 +101,13 @@ func (g *github) Auth() error {
 		}
 		return fmt.Errorf("Github error: %s%s", status, err)
 	}
+	user := struct {
+		Login string `json:"login"`
+	}{}
+	if err := json.Unmarshal(b, &user); err != nil {
+		return err
+	}
+	g.user = user.Login
 	return nil
 }
 
