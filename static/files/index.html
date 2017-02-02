@@ -107,8 +107,8 @@
 							<span> ({{ c.version }})</span>
 						</div>
 						<span ng-repeat="f in c.files" class="file">
-											<a ng-href="/download/{{ c.id }}/{{ f }}">{{ osarch(f) }}</a>
-										</span>
+							<a ng-href="/download/{{ c.id }}/{{ removeExt(f) }}">{{ osarch(f) }}</a>
+						</span>
 						<div ng-show="c.error">{{ c.error }}</div>
 						<div>
 							<span ng-show="!c.completed" class="timestamp">compiling</span>

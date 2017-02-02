@@ -72,6 +72,10 @@ app.controller("AppController", function($scope, $http) {
       : file;
   };
 
+  $scope.removeExt = function(file) {
+    return file.replace(/\.gz/, "");
+  };
+
   $scope.compilationsEmpty = true;
   $scope.compilations = function() {
     var c = [];

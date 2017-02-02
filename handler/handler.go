@@ -200,6 +200,9 @@ func (s *goxHandler) configReq(w http.ResponseWriter, r *http.Request) {
 
 func (s *goxHandler) downloadReq(w http.ResponseWriter, r *http.Request) {
 	file := filepath.Join(tempBuild, strings.TrimPrefix(r.URL.Path, "/download/"))
+	if !strings.HasSuffix(file, ".gz") {
+		file += ".gz"
+	}
 	f, err := os.Open(file)
 	if err != nil {
 		http.Error(w, "Download failed: "+err.Error(), 500)
