@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 // func main() {
@@ -40,9 +41,15 @@ var Github = &github{
 
 var s = fmt.Sprintf
 
-func (g *github) dorequest(method, path string, body io.Reader) (*http.Response, []byte, error) {
+func (g *github) do(method, url string, body io.Reader) (*http.Response, []byte, error) {
+	return g.doHeaders(method, url, body, nil)
+}
 
-	url := "https://api.github.com" + path
+func (g *github) doHeaders(method, url string, body io.Reader, headers map[string]string) (*http.Response, []byte, error) {
+	//no http? assume path, add default origin
+	if !strings.HasPrefix(url, "http") {
+		url = "https://api.github.com" + url
+	}
 	req, _ := http.NewRequest(method, url, body)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
@@ -93,7 +100,7 @@ func (g *github) checkresp(resp *http.Response, b []byte) error {
 }
 
 func (g *github) Auth() error {
-	resp, b, err := g.dorequest("GET", "/user", nil)
+	resp, b, err := g.do("GET", "/user", nil)
 	if err != nil {
 		status := ""
 		if resp != nil {
@@ -128,7 +135,7 @@ func (g *github) Setup(pkg, tag, desc string) (Release, error) {
 	releaseURL := s("/repos/%s/%s/releases", g.user, repo)
 
 	//get release existing
-	_, b, err := g.dorequest("GET", s("%s/tags/%s", releaseURL, tag), nil)
+	_, b, err := g.do("GET", s("%s/tags/%s", releaseURL, tag), nil)
 	if err == nil {
 		rel := &GHRelease{}
 		err = json.Unmarshal(b, rel)
@@ -137,7 +144,7 @@ func (g *github) Setup(pkg, tag, desc string) (Release, error) {
 		}
 		//if it already exists, delete it
 		if rel.ID > 0 {
-			_, _, err = g.dorequest("DELETE", s("%s/%d", releaseURL, rel.ID), nil)
+			_, _, err = g.do("DELETE", s("%s/%d", releaseURL, rel.ID), nil)
 			if err != nil {
 				return nil, fmt.Errorf("Failed to delete old release: %s", err)
 			}
@@ -156,7 +163,7 @@ func (g *github) Setup(pkg, tag, desc string) (Release, error) {
 	b, _ = json.Marshal(newrel)
 	body.Write(b)
 
-	_, b, err = g.dorequest("POST", releaseURL, body)
+	_, b, err = g.do("POST", releaseURL, body)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create new release: %s", err)
 	}
@@ -182,20 +189,13 @@ var ghUploadRegexp = regexp.MustCompile(`\{\?[\w,]+\}`)
 func (r *GHRelease) Upload(name string, contents []byte) error {
 	v := url.Values{}
 	v.Set("name", name)
-	// v.Set("label", "")
 	url := ghUploadRegexp.ReplaceAllString(r.UploadURL, "?"+v.Encode())
-	// log.Printf("url: '%s'", url)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(contents))
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.Header.Set("Content-Type", lookup(name))
-	// req.Header.Set("Content-Encoding", "gzip")
-	req.SetBasicAuth(r.user, r.pass)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
+	body := bytes.NewBuffer(contents)
+	headers := map[string]string{
+		"Content-Type": lookup(name),
 	}
-	return r.checkresp(resp, nil)
+	_, _, err := r.doHeaders("POST", url, body, headers)
+	return err
 }
 
 func lookup(file string) string {
