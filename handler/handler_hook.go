@@ -35,7 +35,7 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(b, h)
 
 	if err != nil {
-		err = fmt.Errorf("invalid json (%s)", err)
+		err = fmt.Errorf("invalid json (%s) contents:\n%s", err, b)
 	} else if !h.Created || !strings.HasPrefix(h.Ref, "refs/tags/") {
 		err = errors.New("only accepts create-tag hooks")
 	} else if h.Repository.Owner.Name == "" {
