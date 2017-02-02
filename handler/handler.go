@@ -51,6 +51,7 @@ type serverConfig struct {
 	Version, Bin, Path, OS, Arch string
 	NumCPU                       int
 	Platforms                    Platforms
+	BinVersion                   string
 }
 
 type serverState struct {
@@ -65,7 +66,7 @@ type serverState struct {
 	Log          map[string]*message //Log is a map for syncing purposes
 }
 
-//NewgoxHandler creates a new goxHandler
+//New creates a new Handler
 func New() (http.Handler, error) {
 	if _, err := exec.LookPath("git"); err != nil {
 		return nil, fmt.Errorf("git is not installed")
@@ -78,6 +79,10 @@ func New() (http.Handler, error) {
 	platforms, err := GetDefaultPlatforms(goBin)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list platforms (go 1.7 or higher required)")
+	}
+	binVersion, err := GoBinVersion(goBin)
+	if err != nil {
+		return nil, err
 	}
 	goPath := os.Getenv("GOPATH")
 	if goPath == "" {
@@ -108,13 +113,14 @@ func New() (http.Handler, error) {
 		files: static.FileSystemHandler(),
 		rt:    rt,
 		config: serverConfig{
-			Version:   strings.TrimPrefix(runtime.Version(), "go"),
-			Bin:       goBin,
-			Path:      goPath,
-			OS:        runtime.GOOS,
-			Arch:      runtime.GOARCH,
-			NumCPU:    runtime.NumCPU(),
-			Platforms: platforms,
+			Version:    strings.TrimPrefix(runtime.Version(), "go"),
+			Bin:        goBin,
+			Path:       goPath,
+			OS:         runtime.GOOS,
+			Arch:       runtime.GOARCH,
+			NumCPU:     runtime.NumCPU(),
+			Platforms:  platforms,
+			BinVersion: binVersion,
 		},
 		state: serverState{
 			Log:       map[string]*message{},

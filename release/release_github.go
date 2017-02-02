@@ -15,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"time"
 )
 
 // func main() {
@@ -32,11 +31,11 @@ import (
 // }
 
 type github struct {
-	user, pass string
+	user, pass, token string
 }
 
 var Github = &github{
-	os.Getenv("GH_USER"), os.Getenv("GH_PASS"),
+	os.Getenv("GH_USER"), os.Getenv("GH_PASS"), os.Getenv("GH_TOKEN"),
 }
 
 var s = fmt.Sprintf
@@ -46,7 +45,14 @@ func (g *github) dorequest(method, path string, body io.Reader) (*http.Response,
 	url := "https://api.github.com" + path
 	req, _ := http.NewRequest(method, url, body)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.SetBasicAuth(g.user, g.pass)
+
+	if g.token != "" {
+		req.Header.Set("Authorization", "token "+g.token)
+	} else if g.user != "" && g.pass != "" {
+		req.SetBasicAuth(g.user, g.pass)
+	} else {
+		return nil, nil, fmt.Errorf("Missing authentication environment variables")
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -85,18 +91,18 @@ func (g *github) checkresp(resp *http.Response, b []byte) error {
 }
 
 func (g *github) Auth() error {
-	if g.user == "" || g.pass == "" {
-		return fmt.Errorf("Github missing authentication environment variables")
-	}
 	resp, _, err := g.dorequest("GET", "/user", nil)
-	if err != nil || resp.StatusCode != 200 {
-		return fmt.Errorf("Github authentication failed for user: %s (%d %v)", g.user, resp.StatusCode, err)
+	if err != nil {
+		status := ""
+		if resp != nil {
+			status = fmt.Sprintf("[%d] ", resp.StatusCode)
+		}
+		return fmt.Errorf("Github error: %s%s", status, err)
 	}
-
 	return nil
 }
 
-func (g *github) Setup(pkg, tag string) (Release, error) {
+func (g *github) Setup(pkg, tag, desc string) (Release, error) {
 
 	re := regexp.MustCompile(s(`^github\.com\/([^\/]+)\/(.+)$`))
 	m := re.FindStringSubmatch(pkg)
@@ -135,9 +141,7 @@ func (g *github) Setup(pkg, tag string) (Release, error) {
 		Body string `json:"body"`
 	}{
 		tag,
-		"*This release was automatically cross-compiled and uploaded by " +
-			"[cloud-gox](https://github.com/jpillora/cloud-gox) at " +
-			time.Now().UTC().Format(time.RFC3339) + "*",
+		desc,
 	}
 	body := &bytes.Buffer{}
 	b, _ = json.Marshal(newrel)

@@ -13,11 +13,15 @@
 			"required": false
 		},
 		"GH_USER": {
-			"description": "Github user",
+			"description": "Github user (requires password)",
 			"required": false
 		},
 		"GH_PASS": {
-			"description": "Github password",
+			"description": "Github password (requires user)",
+			"required": false
+		},
+		"GH_TOKEN": {
+			"description": "Github API token",
 			"required": false
 		}
 	}

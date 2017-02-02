@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"errors"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -37,4 +39,19 @@ func GetDefaultPlatforms(goBin string) (Platforms, error) {
 		}
 	}
 	return p, nil
+}
+
+var matchBinVersion = regexp.MustCompile(` go(\S+) `)
+
+func GoBinVersion(goBin string) (string, error) {
+	b, err := exec.Command(goBin, "version").Output()
+	if err != nil {
+		return "", err
+	}
+	out := string(b)
+	m := matchBinVersion.FindStringSubmatch(out)
+	if len(m) == 0 {
+		return "", errors.New("version not found in: " + out)
+	}
+	return m[1], nil
 }

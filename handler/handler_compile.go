@@ -28,7 +28,11 @@ func (s *goxHandler) compile(c *Compilation) error {
 	var rel release.Release
 	once := sync.Once{}
 	setupRelease := func() {
-		if r, err := releaser.Setup(c.Package, c.Version); err == nil {
+		desc := "*This release was automatically cross-compiled and uploaded by " +
+			"[cloud-gox](https://github.com/jpillora/cloud-gox) at " +
+			time.Now().UTC().Format(time.RFC3339) + "* using Go " +
+			"*" + s.config.BinVersion + "*"
+		if r, err := releaser.Setup(c.Package, c.Version, desc); err == nil {
 			rel = r
 			s.Printf("%s successfully setup release %s (%s)\n", c.Releaser, c.Package, c.Version)
 		} else {
@@ -43,7 +47,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 	pkgDir := filepath.Join(s.config.Path, "src", c.Package)
 	//get target package
 	goget := []string{"get", "-v"}
-	if c.UpdatePkgs {
+	if c.GoGet {
 		goget = append(goget, "-u")
 	}
 	goget = append(goget, c.Package)
@@ -82,7 +86,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		//get target deps
 		if targetDir != pkgDir {
 			goget := []string{"get", "-v"}
-			if c.UpdatePkgs {
+			if c.GoGet {
 				goget = append(goget, "-u")
 			}
 			goget = append(goget, ".")
@@ -105,9 +109,10 @@ func (s *goxHandler) compile(c *Compilation) error {
 				continue
 			}
 			ldflags := []string{}
-			if !c.DebugInfo {
-				ldflags = append(ldflags, "-s")
+			if c.Shrink {
+				ldflags = append(ldflags, "-s", "-w")
 			}
+			c.Variables["CLOUD_GOX"] = "1"
 			for k, v := range c.Variables {
 				ldflags = append(ldflags, "-X main."+k+"="+v)
 			}

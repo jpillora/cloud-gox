@@ -1,10 +1,10 @@
 <html>
 
 <head>
-		<title>Cloud Gox</title>
-		<link rel="stylesheet" href="css/semantic.min.css">
-		<link rel="stylesheet" href="css/app.css">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Cloud Gox</title>
+	<link rel="stylesheet" href="css/semantic.min.css">
+	<link rel="stylesheet" href="css/app.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body id="root" ng-app="cloudgox" ng-controller="AppController">
@@ -24,122 +24,123 @@
 			</a>
 		</div>
 	</div>
-		<div class="ui stackable app grid">
-				<div class="eight wide column">
-						<div class="ui compile segment">
-								<form class="ui form" ng-submit="compile()">
-										<div class="field">
-												<label>Package <span class="tip">The target <code>main</code> package to build</span></label>
-												<input type="text" placeholder="github.com/user/pkg" ng-model="package.name">
-										</div>
-										<div class="field" ng-show="showMore">
-												<label>Git Commit-ish <span class="tip">Resets the package repository to a specific commit and sets the <input type="text" class="ldflag" ng-model="package.commitVar"> ld-flag. Click to edit.</span></label>
-												<input type="text" ng-model="package.commitish">
-										</div>
-										<div class="field" ng-show="showMore">
-												<label>Version <span class="tip">Sets the <input type="text" class="ldflag" ng-model="package.versionVar"> ld-flag. Click to edit.</span></label>
-												<input type="text" placeholder="1.0.0" ng-model="package.version">
-										</div>
-										<div class="three fields" ng-show="showMore">
-											<div class="field">
-												<label>Enable CGO</label>
-												<div class="ui checkbox">
-												<input type="checkbox" ng-model="package.cgo">
-												<label></label>
-												</div>
-											</div>
-											<div class="field">
-												<label>Debug Info</label>
-												<div class="ui checkbox">
-												<input type="checkbox" ng-model="package.debugInfo">
-												<label></label>
-												</div>
-											</div>
-											<div class="field">
-												<label>Update Pkgs</label>
-												<div class="ui checkbox">
-												<input type="checkbox" ng-model="package.updatePkgs">
-												<label></label>
-												</div>
-											</div>
-										</div>
-										<div class="field" ng-show="showMore">
-												<label>Platforms</label>
-												<div class="platforms">
-													<div ng-repeat="(osID, os) in package.platforms">
-															<div class="osheader">{{ osID }}</div>
-															<span ng-repeat="(archID, arch) in os" class="ui archbox checkbox" ng-class="{checked: arch }">
+	<div class="ui stackable app grid">
+		<div class="eight wide column">
+			<div class="ui compile segment">
+				<form class="ui form" ng-submit="compile()">
+					<div class="field">
+						<label>Package <span class="tip">The target <code>main</code> package to build</span></label>
+						<input type="text" placeholder="github.com/user/pkg" ng-model="package.name">
+					</div>
+					<div class="field" ng-show="showMore">
+						<label>Git Commit-ish <span class="tip">Resets the package repository to a specific commit and sets the <input type="text" class="ldflag" ng-model="package.commitVar"> ld-flag. Click to edit.</span></label>
+						<input type="text" ng-model="package.commitish">
+					</div>
+					<div class="field" ng-show="showMore">
+						<label>Version <span class="tip">Sets the <input type="text" class="ldflag" ng-model="package.versionVar"> ld-flag. Click to edit.</span></label>
+						<input type="text" placeholder="1.0.0" ng-model="package.version">
+					</div>
+					<div class="three fields" ng-show="showMore">
+						<div class="field">
+							<label>Enable CGO</label>
+							<div class="ui checkbox">
+								<input type="checkbox" ng-model="package.cgo">
+								<label></label>
+							</div>
+						</div>
+						<div class="field">
+							<label>Shrink</label>
+							<div class="ui checkbox">
+								<input type="checkbox" ng-model="package.shrink">
+								<label></label>
+							</div>
+						</div>
+						<div class="field">
+							<label>Go Get</label>
+							<div class="ui checkbox">
+								<input type="checkbox" ng-model="package.goGet">
+								<label></label>
+							</div>
+						</div>
+					</div>
+					<div class="field" ng-show="showMore">
+						<label>Platforms</label>
+						<div class="platforms">
+							<div ng-repeat="(osID, os) in package.platforms">
+								<div class="osheader">{{ osID }}</div>
+								<span ng-repeat="(archID, arch) in os" class="ui archbox checkbox" ng-class="{checked: arch }">
 																	<input type="checkbox" id="{{osID}}{{archID}}" ng-model="package.platforms[osID][archID]">
 																	<label for="{{osID}}{{archID}}">{{ archID }}</label>
 															</span>
-													</div>
-												</div>
-										</div>
-										<div class="controls">
-												<div class="ui small button" ng-click="showMore = !showMore">{{ showMore && 'Hide' || 'Show' }} more</div>
-												<button class="ui small primary button" type="submit" ng-disabled="loading || !Connected">Compile</button>
-										</div>
-								</form>
+							</div>
 						</div>
+					</div>
+					<div class="controls">
+						<div class="ui small button" ng-click="showMore = !showMore">{{ showMore && 'Hide' || 'Show' }} more</div>
+						<button class="ui small primary button" type="submit" ng-disabled="loading || !Connected">Compile</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="eight wide column">
+			<div class="ui compilations segment">
+				<h5 class="ui header">Compiled binaries</h5>
+
+				<div class="ui icon info message" ng-if="!state.Compilations || state.Compilations.length == 0">
+					<i class="left chevron icon"></i>
+					<div class="content">
+						<div class="header">There are no binaries yet</div>
+						<p>Compiled packages will appear here.</p>
+					</div>
 				</div>
-				<div class="eight wide column">
-						<div class="ui compilations segment">
-								<h5 class="ui header">Compiled binaries</h5>
 
-								<div class="ui icon info message" ng-if="!state.Compilations || state.Compilations.length == 0">
-									<i class="left chevron icon"></i>
-									<div class="content">
-										<div class="header">There are no binaries yet</div>
-										<p>Compiled packages will appear here.</p>
-									</div>
-								</div>
-
-								<div class="ui icon compilation message" ng-repeat="c in state.Compilations" ng-class="{
+				<div class="ui icon compilation message" ng-repeat="c in state.Compilations" ng-class="{
 									info: !c.completed, negative: c.completed && c.error, positive: c.completed && !c.error }">
-									<i ng-class="{loading: !c.completed, notched: !c.completed, circle: !c.completed,
+					<i ng-class="{loading: !c.completed, notched: !c.completed, circle: !c.completed,
 										download: c.completed}" class="icon"></i>
-									<div class="content">
-										<div class="header" ng-controller="PkgURLController">
-											<a ng-href="{{ urls.repo }}" target="_blank">{{ urls.repoName }}</a>
-											<span ng-if="urls.targetName">/</span>
-											<span ng-if="!urls.target">{{ urls.targetName }}</span>
-											<a	ng-if="urls.target" ng-href="{{ urls.target }}" target="_blank">{{ urls.targetName }}</a>
-											<span> ({{ c.version }})</span>
-										</div>
-										<span ng-repeat="f in c.files" class="file">
+					<div class="content">
+						<div class="header" ng-controller="PkgURLController">
+							<a ng-href="{{ urls.repo }}" target="_blank">{{ urls.repoName }}</a>
+							<span ng-if="urls.targetName">/</span>
+							<span ng-if="!urls.target">{{ urls.targetName }}</span>
+							<a ng-if="urls.target" ng-href="{{ urls.target }}" target="_blank">{{ urls.targetName }}</a>
+							<span> ({{ c.version }})</span>
+						</div>
+						<span ng-repeat="f in c.files" class="file">
 											<a ng-href="/download/{{ c.id }}/{{ f }}">{{ osarch(f) }}</a>
 										</span>
-										<div ng-show="c.error">{{ c.error }}</div>
-										<div>
-											<span ng-show="!c.completed" class="timestamp">compiling</span>
-											<span ng-show="c.completed" class="timestamp">compiled {{ ago(c.completedAt) }}</span>
-											<span ng-show="c.commitish"> from commit {{ c.commitish }}</span>
-										</div>
-									</div>
-								</div>
+						<div ng-show="c.error">{{ c.error }}</div>
+						<div>
+							<span ng-show="!c.completed" class="timestamp">compiling</span>
+							<span ng-show="c.completed" class="timestamp">compiled {{ ago(c.completedAt) }}</span>
+							<span ng-show="c.commitish"> from commit {{ c.commitish }}</span>
 						</div>
+					</div>
 				</div>
-				<div class="sixteen wide column">
-						<div class="ui segment">
-								<div class="log">
-								</div>
-						</div>
-				</div>
-		</div>
-
-		<div class="footer">
-			<div>
-				Go {{ config.Version }}, {{ config.OS }}/{{ config.Arch }}, {{ config.NumCPU }} available CPU{{ config.NumCPU == 1 && '' || 's' }}
-			</div>
-			<div>
-				<a href="https://github.com/jpillora" target="_blank">@jpillora</a>
 			</div>
 		</div>
+		<div class="sixteen wide column">
+			<div class="ui segment">
+				<div class="log">
+				</div>
+			</div>
+		</div>
+	</div>
 
-		<script src="realtime"></script>
-		<script src="js/angular.min.js"></script>
-		<script src="js/moment.min.js"></script>
-		<script src="js/app.js"></script>
+	<div class="footer">
+		<div>
+			Go {{ config.Version }}, {{ config.OS }}/{{ config.Arch }}, {{ config.NumCPU }} available CPU{{ config.NumCPU == 1 && ''
+			|| 's' }}
+		</div>
+		<div>
+			<a href="https://github.com/jpillora" target="_blank">@jpillora</a>
+		</div>
+	</div>
+
+	<script src="realtime"></script>
+	<script src="js/angular.min.js"></script>
+	<script src="js/moment.min.js"></script>
+	<script src="js/app.js"></script>
 </body>
 
 </html>

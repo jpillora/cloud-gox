@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -22,6 +21,8 @@ type hook struct {
 }
 
 func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
+
+	s.Printf("hook recieved from: %s", r.RemoteAddr)
 
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -46,6 +47,7 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write([]byte(err.Error()))
+		s.Printf("hook failed: %s", err)
 		return
 	}
 
@@ -64,10 +66,10 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 		Commitish:  tag,
 		Targets:    targets,
 		Releaser:   "github",
-		//default all to ON, explicit "0" required to disable
-		CGO:        q.Get("cgo") != "0",
-		DebugInfo:  q.Get("debugInfo") != "0",
-		UpdatePkgs: q.Get("updatePkgs") != "0",
+		//default: ON (!= "0") OFF (== "1")
+		CGO:    q.Get("cgo") == "1",
+		Shrink: q.Get("shrink") != "0",
+		GoGet:  q.Get("goGet") != "0",
 	}
 
 	//all hooks, by default, build for all systems
@@ -79,8 +81,10 @@ func (s *goxHandler) hookReq(w http.ResponseWriter, r *http.Request) {
 
 	err = s.enqueue(c)
 	if err != nil {
-		log.Printf("hook failed: %s", err)
+		s.Printf("hook failed: %s", err)
 		w.WriteHeader(500)
 		w.Write([]byte(err.Error()))
+		return
 	}
+	s.Printf("hook success - enqueued compilation")
 }

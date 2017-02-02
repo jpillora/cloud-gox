@@ -29,11 +29,11 @@ $ go get -v github.com/jpillora/cloud-gox
 
 	[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-1. Optionally add **HTTP authentication credentials**
+1. Optionally add **HTTP authentication**
 
-1. Optionally add your **Github credentials**
+1. Optionally add your **Github authentication**
 
-	Github web-hooks sent from the **specified user** to `cloud-gox` will create a new Github release inside **the source repository** for **specified tag** and then each of the compiled binaries will be uploaded as release assets. Once you've set `GH_USER` and `GH_PASS` environment variables, you can setup any of your repositories for automatic releases:
+	Github web-hooks sent from the **specified user** to `cloud-gox` will create a new Github release inside **the source repository** for **specified tag** and then each of the compiled binaries will be uploaded as release assets. Once you've set `GH_USER`/`GH_PASS` or `GH_TOKEN` environment variables, you can setup any of your repositories for automatic releases:
 
 	1. Go to `https://github.com/<username>/<repo>/settings/hooks`
 	1. Click the `Add Webhook` button
@@ -50,7 +50,6 @@ $ go get -v github.com/jpillora/cloud-gox
 #### Todo
 
 * Run parallel builds
-* Add dynamic Godeps support
 * Verify Github signed web-hooks
 
 #### Notes

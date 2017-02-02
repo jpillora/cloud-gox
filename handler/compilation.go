@@ -23,8 +23,8 @@ type Compilation struct {
 	CommitVar string `json:"commitVar"`
 	//user compile options
 	CGO        bool              `json:"cgo"`
-	DebugInfo  bool              `json:"debugInfo"` //include debug info from binary (dont use ldflag -s)
-	UpdatePkgs bool              `json:"updatePkgs"`
+	Shrink     bool              `json:"shrink"` //ldflag -s -w
+	GoGet      bool              `json:"goGet"`
 	Version    string            `json:"version"`
 	VersionVar string            `json:"versionVar"`
 	Platforms  Platforms         `json:"platforms"`
