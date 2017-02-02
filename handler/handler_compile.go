@@ -46,13 +46,10 @@ func (s *goxHandler) compile(c *Compilation) error {
 	}
 	pkgDir := filepath.Join(s.config.Path, "src", c.Package)
 	//get target package
-	goget := []string{"get", "-v"}
 	if c.GoGet {
-		goget = append(goget, "-u")
-	}
-	goget = append(goget, c.Package)
-	if err := s.exec(".", "go", nil, goget...); err != nil {
-		return fmt.Errorf("failed to get dependencies %s (%s)", c.Package, err)
+		if err := s.exec(pkgDir, "go", nil, "get", "-v", "-u", "."); err != nil {
+			return fmt.Errorf("failed to get dependencies %s (%s)", c.Package, err)
+		}
 	}
 	if _, err := os.Stat(pkgDir); err != nil {
 		return fmt.Errorf("failed to find package %s", c.Package)
@@ -74,7 +71,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		cmd.Dir = pkgDir
 		if out, err := cmd.Output(); err == nil {
 			currCommitish := strings.TrimSuffix(string(out), "\n")
-			c.Variables[currCommitish] = c.Commitish
+			c.Variables[currCommitish] = currCommitish
 		}
 	}
 
@@ -83,18 +80,18 @@ func (s *goxHandler) compile(c *Compilation) error {
 		target := filepath.Join(c.Package, t)
 		targetDir := filepath.Join(pkgDir, t)
 		targetName := filepath.Base(target)
-		//get target deps
-		if targetDir != pkgDir {
-			goget := []string{"get", "-v"}
-			if c.GoGet {
-				goget = append(goget, "-u")
-			}
-			goget = append(goget, ".")
-			if err := s.exec(targetDir, "go", nil, goget...); err != nil {
-				s.Printf("failed to get dependencies %s\n", target)
-				continue
+		//go-get target deps
+		if c.GoGet && targetDir != pkgDir {
+			if c.Commitish != "" {
+				s.Printf("[warning] skip go get sub-directory %s while not non-HEAD branch", t)
+			} else {
+				if err := s.exec(targetDir, "go", nil, "get", "-v", "-u", "."); err != nil {
+					s.Printf("failed to get dependencies  of subdirectory %s", t)
+					continue
+				}
 			}
 		}
+		//compile target for all os/arch combos
 		for _, osarchstr := range c.OSArch {
 			osarch := strings.SplitN(osarchstr, "/", 2)
 			osname := osarch[0]
