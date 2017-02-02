@@ -53,6 +53,10 @@ func (g *github) doHeaders(method, url string, body io.Reader, headers map[strin
 	req, _ := http.NewRequest(method, url, body)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
 	if g.token != "" {
 		req.Header.Set("Authorization", "token "+g.token)
 	} else if g.user != "" && g.pass != "" {
