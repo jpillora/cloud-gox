@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -106,7 +107,9 @@ func (s *goxHandler) compile(c *Compilation) error {
 				ldflags = append(ldflags, "-s", "-w")
 			}
 			c.Variables["CLOUD_GOX"] = "1"
+			c.Variables["BUILD_TIME"] = strconv.FormatInt(time.Now().Unix(), 10)
 			for k, v := range c.Variables {
+				s.Printf("ld-flag: %s=%s", k, v)
 				ldflags = append(ldflags, "-X main."+k+"="+v)
 			}
 			args := []string{
@@ -119,9 +122,11 @@ func (s *goxHandler) compile(c *Compilation) error {
 			}
 			env := environ{}
 			if !c.CGO {
+				s.Printf("cgo disabled")
 				env["CGO_ENABLED"] = "0"
 			}
 			for k, v := range c.Env {
+				s.Printf("env: %s=%s", k, v)
 				env[k] = v
 			}
 			env["GOOS"] = osname
