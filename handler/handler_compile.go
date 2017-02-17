@@ -72,10 +72,21 @@ func (s *goxHandler) compile(c *Compilation) error {
 		cmd.Dir = pkgDir
 		if out, err := cmd.Output(); err == nil {
 			currCommitish := strings.TrimSuffix(string(out), "\n")
-			c.Variables[currCommitish] = currCommitish
+			c.Variables[c.CommitVar] = currCommitish
 		}
 	}
-
+	//calculate ldflags
+	ldflags := []string{}
+	if c.Shrink {
+		s.Printf("ld-flag: -s -w (shrink)")
+		ldflags = append(ldflags, "-s", "-w")
+	}
+	c.Variables["CLOUD_GOX"] = "1"
+	c.Variables["BUILD_TIME"] = strconv.FormatInt(time.Now().Unix(), 10)
+	for k, v := range c.Variables {
+		s.Printf("ld-flag: %s=%s", k, v)
+		ldflags = append(ldflags, "-X main."+k+"="+v)
+	}
 	//compile all combinations of each target and each osarch
 	for _, t := range c.Targets {
 		target := filepath.Join(c.Package, t)
@@ -102,16 +113,6 @@ func (s *goxHandler) compile(c *Compilation) error {
 				s.Printf("failed to find target %s\n", target)
 				continue
 			}
-			ldflags := []string{}
-			if c.Shrink {
-				ldflags = append(ldflags, "-s", "-w")
-			}
-			c.Variables["CLOUD_GOX"] = "1"
-			c.Variables["BUILD_TIME"] = strconv.FormatInt(time.Now().Unix(), 10)
-			for k, v := range c.Variables {
-				s.Printf("ld-flag: %s=%s", k, v)
-				ldflags = append(ldflags, "-X main."+k+"="+v)
-			}
 			args := []string{
 				"build",
 				"-a",
@@ -120,17 +121,17 @@ func (s *goxHandler) compile(c *Compilation) error {
 				"-o", targetOut,
 				".",
 			}
-			env := environ{}
+			c.Env["GOOS"] = osname
+			c.Env["GOARCH"] = arch
 			if !c.CGO {
 				s.Printf("cgo disabled")
-				env["CGO_ENABLED"] = "0"
+				c.Env["CGO_ENABLED"] = "0"
 			}
+			env := environ{}
 			for k, v := range c.Env {
 				s.Printf("env: %s=%s", k, v)
 				env[k] = v
 			}
-			env["GOOS"] = osname
-			env["GOARCH"] = arch
 			//run go build with cross compile configuration
 			if err := s.exec(targetDir, "go", env, args...); err != nil {
 				s.Printf("failed to build %s\n", targetFilename)
