@@ -249,7 +249,6 @@ func (s *goxHandler) enqueueReq(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *goxHandler) enqueue(c *Compilation) error {
-
 	if c.Package == "" {
 		return errors.New("Missing package")
 	}
@@ -261,6 +260,9 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 	}
 	if c.CommitVar == "" {
 		c.CommitVar = "COMMIT"
+	}
+	if c.Env == nil {
+		c.Env = map[string]string{}
 	}
 	if c.Platforms != nil {
 		c.OSArch = []string{}
