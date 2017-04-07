@@ -256,10 +256,10 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 		return errors.New("Missing version")
 	}
 	if c.VersionVar == "" {
-		c.VersionVar = "VERSION"
+		c.VersionVar = "main.VERSION"
 	}
 	if c.CommitVar == "" {
-		c.CommitVar = "COMMIT"
+		c.CommitVar = "main.COMMIT"
 	}
 	if c.Env == nil {
 		c.Env = map[string]string{}

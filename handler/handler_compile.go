@@ -18,6 +18,7 @@ import (
 	"github.com/jpillora/cloud-gox/release"
 )
 
+//temporary storeage for the resulting binaries
 var tempBuild = path.Join(os.TempDir(), "cloudgox")
 
 //server's compile method
@@ -81,11 +82,11 @@ func (s *goxHandler) compile(c *Compilation) error {
 		s.Printf("ld-flag: -s -w (shrink)")
 		ldflags = append(ldflags, "-s", "-w")
 	}
-	c.Variables["CLOUD_GOX"] = "1"
-	c.Variables["BUILD_TIME"] = strconv.FormatInt(time.Now().Unix(), 10)
+	c.Variables["main.CLOUD_GOX"] = "1"
+	c.Variables["main.BUILD_TIME"] = strconv.FormatInt(time.Now().Unix(), 10)
 	for k, v := range c.Variables {
-		s.Printf("ld-flag: %s=%s", k, v)
-		ldflags = append(ldflags, "-X main."+k+"="+v)
+		s.Printf("ld-flag-X: %s=%s", k, v)
+		ldflags = append(ldflags, "-X "+k+"="+v)
 	}
 	//compile all combinations of each target and each osarch
 	for _, t := range c.Targets {

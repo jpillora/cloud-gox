@@ -2,14 +2,14 @@
 
 A Go (golang) Cross-Compiler in the cloud
 
+* Uses latest Go
 * Embedded realtime front-end
 * Automatic multi-platform Github releases
-* Uses Go 1.6 (no toolchain builds required)
 * Compile your favourite command-line tools from the browser
 
 ### Demo
 
-#### http://gox.jpillora.com/
+#### https://gox.jpillora.com/
 
 ### Install
 
@@ -43,7 +43,7 @@ $ go get -v github.com/jpillora/cloud-gox
 
 	You can customize your web-hook using query parameters (e.g. `/hook?foo=bar`). You can set:
 
-	* a `versionvar` parameter to change the ldflags variable (defaults to `VERSION`)
+	* a `versionvar` parameter to change the ldflags variable (defaults to `main.VERSION`)
 	* a `osarch` parameter which provides a comma separated list of build platforms, each platform must be in the form `os/arch`
 	* a `target` parameter which provides a comma separated list of each command-line tool within your package (e.g. `target=cmd/foo` will build `<repo>/cmd/foo`)
 

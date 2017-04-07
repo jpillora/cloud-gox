@@ -11,8 +11,8 @@ app.controller("AppController", function($scope, $http) {
   $scope.package = {
     name: "github.com/jpillora/serve",
     version: "",
-    versionVar: "VERSION",
-    commitVar: "COMMIT",
+    versionVar: "main.VERSION",
+    commitVar: "main.COMMIT",
     platforms: null,
     commitish: "",
     cgo: true,
@@ -100,10 +100,10 @@ app.controller("AppController", function($scope, $http) {
     var first = state.LogOffset;
     var last = first + state.LogCount;
     var i = first - 1;
-    while (elem = document.querySelector("#log" + i--))
+    while ((elem = document.querySelector("#log" + i--)))
       elem.remove();
     i = last + 1;
-    while (elem = document.querySelector("#log" + i++))
+    while ((elem = document.querySelector("#log" + i++)))
       elem.remove();
 
     //render new logs
@@ -135,9 +135,13 @@ app.controller("AppController", function($scope, $http) {
       span.className = "msg " + l.type;
       l.$span = span;
 
-      var html = l.msg.split("\n").filter(function(l) {
-        return !!l;
-      }).reverse().join("</br>");
+      var html = l.msg
+        .split("\n")
+        .filter(function(l) {
+          return !!l;
+        })
+        .reverse()
+        .join("</br>");
       span.innerHTML = html + "</br>";
 
       var timestamp = document.createElement("span");
@@ -154,7 +158,7 @@ app.controller("AppController", function($scope, $http) {
 
 app.controller("PkgURLController", function($scope) {
   var compilation = $scope.c;
-  var urls = $scope.urls = {};
+  var urls = ($scope.urls = {});
   if (!/^([^\/]+\/[^\/]+\/[^\/]+)(\/(.+))?/.test(compilation.name)) {
     return;
   }
