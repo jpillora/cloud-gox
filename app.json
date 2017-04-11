@@ -3,7 +3,16 @@
 	"website": "https://github.com/jpillora/cloud-gox",
 	"repository": "https://github.com/jpillora/cloud-gox",
 	"env": {
-		"BUILDPACK_URL": "http://github.com/jpillora/heroku-buildpack-go.git",
+		"GO_INSTALL_TOOLS_IN_IMAGE": {
+			"description": "Installs the go toolchain in the final Heroku slug. Must be 'true'",
+			"value": "true",
+			"required": true
+		},
+		"GO_SETUP_GOPATH_IN_IMAGE": {
+			"description": "Sets the $GOPATH, aswell as other things. Must be 'true'",
+			"value": "true",
+			"required": true
+		},
 		"HTTP_USER": {
 			"description": "HTTP authentication user",
 			"required": false
