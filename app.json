@@ -32,6 +32,10 @@
 		"GH_TOKEN": {
 			"description": "Github API token",
 			"required": false
+		},
+		"GH_PAN": {
+			"description": "Github Personal Access Token (must have full access to the 'repos' section). Used to clone private repositories",
+			"required": false
 		}
 	}
 }
