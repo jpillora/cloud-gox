@@ -135,6 +135,17 @@ func New() (http.Handler, error) {
 	go s.dequeueLogs()
 	s.Printf("cloud-gox started%s\n", userMessage)
 
+	githubPan := os.Getenv("GH_PAN")
+	if githubPan != "" {
+		s.Printf("Using Github PAN to clone private repositories")
+		gitCommand := exec.Command("bash", "-c", "git config --global url.\"https://" + githubPan + ":x-oauth-basic@github.com/\".insteadOf \"https://github.com/\"")
+		output, err := gitCommand.CombinedOutput()
+		if err != nil {
+			s.Printf("Git config failed: %s", err)
+		}
+		s.Printf("Git config succeeded: %s", output)
+	}
+
 	auth := os.Getenv("HTTP_USER") + ":" + os.Getenv("HTTP_PASS")
 	if auth != ":" {
 		s.auth = auth
