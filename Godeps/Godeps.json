@@ -1,32 +1,32 @@
 {
-	"ImportPath": "github.com/jpillora/cloud-gox",
-	"GoVersion": "go1.8.3",
-	"GodepVersion": "v74",
-	"Deps": [
-		{
-			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
-			"Rev": "57eb5e1fc594ad4b0b1dbea7b286d299e0cb43c2"
-		},
-		{
-			"ImportPath": "github.com/gorilla/websocket",
-			"Comment": "v1.0.0-17-ga836c37",
-			"Rev": "a836c37014dbbf0d1e871d04531b851fcbdeb22d"
-		},
-		{
-			"ImportPath": "github.com/jpillora/go-realtime",
-			"Rev": "c8b52e99fa07b59183859c03304ea01f04e4921f"
-		},
-		{
-			"ImportPath": "github.com/jpillora/opts",
-			"Rev": "bd414c582ce587985ea2c1d8bf543ec884d85a60"
-		},
-		{
-			"ImportPath": "github.com/kardianos/osext",
-			"Rev": "29ae4ffbc9a6fe9fb2bc5029050ce6996ea1d3bc"
-		},
-		{
-			"ImportPath": "github.com/mattbaird/jsonpatch",
-			"Rev": "cda1f16168eced02e2c315e83da80c7f1166a111"
-		}
-	]
+  "ImportPath": "github.com/jpillora/cloud-gox",
+  "GoVersion": "go1.9",
+  "GodepVersion": "v74",
+  "Deps": [
+    {
+      "ImportPath": "github.com/elazarl/go-bindata-assetfs",
+      "Rev": "57eb5e1fc594ad4b0b1dbea7b286d299e0cb43c2"
+    },
+    {
+      "ImportPath": "github.com/gorilla/websocket",
+      "Comment": "v1.0.0-17-ga836c37",
+      "Rev": "a836c37014dbbf0d1e871d04531b851fcbdeb22d"
+    },
+    {
+      "ImportPath": "github.com/jpillora/go-realtime",
+      "Rev": "c8b52e99fa07b59183859c03304ea01f04e4921f"
+    },
+    {
+      "ImportPath": "github.com/jpillora/opts",
+      "Rev": "bd414c582ce587985ea2c1d8bf543ec884d85a60"
+    },
+    {
+      "ImportPath": "github.com/kardianos/osext",
+      "Rev": "29ae4ffbc9a6fe9fb2bc5029050ce6996ea1d3bc"
+    },
+    {
+      "ImportPath": "github.com/mattbaird/jsonpatch",
+      "Rev": "cda1f16168eced02e2c315e83da80c7f1166a111"
+    }
+  ]
 }
