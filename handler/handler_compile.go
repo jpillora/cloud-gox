@@ -95,7 +95,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		targetName := filepath.Base(target)
 		//go-get target deps
 		if c.GoGet && targetDir != pkgDir {
-			if err := s.exec(targetDir, "go", nil, "get", "-v", "."); err != nil {
+			if err := s.exec(targetDir, "go", nil, "get", "-v", "-d", "."); err != nil {
 				s.Printf("failed to get dependencies  of subdirectory %s", t)
 				continue
 			}
