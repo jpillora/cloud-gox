@@ -41,21 +41,38 @@ func (s *goxHandler) compile(c *Compilation) error {
 			s.Printf("%s failed to setup release %s (%s)\n", c.Releaser, c.Package, err)
 		}
 	}
+	//initial environment
+	goEnv := environ{}
 	//setup temp dir
 	buildDir := filepath.Join(tempBuild, c.ID)
 	if err := os.Mkdir(buildDir, 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("Failed to create build directory %s", err)
 	}
-	pkgDir := filepath.Join(s.config.Path, "src", c.Package)
+	//set this builds' package GOPATH
+	goPath := filepath.Join(buildDir, "gopath")
+	if err := os.Mkdir(goPath, 0755); err != nil && !os.IsExist(err) {
+		return fmt.Errorf("Failed to create build directory %s", err)
+	}
+	goEnv["GOPATH"] = goPath
+	s.Printf("GOPATH: %s", goPath)
+	//set this builds' package directory
+	pkgDir := filepath.Join(goPath, "src", c.Package)
 	//get target package
 	if c.GoGet {
-		if err := s.exec(".", "go", nil, "get", "-v", c.Package); err != nil {
+		if err := s.exec(".", "go", goEnv, "get", "-v", c.Package); err != nil {
 			return fmt.Errorf("failed to get dependencies %s (%s)", c.Package, err)
 		}
 	}
 	if _, err := os.Stat(pkgDir); err != nil {
 		return fmt.Errorf("failed to find package %s", c.Package)
 	}
+	//decide whether to enable or disable go modules
+	if _, err := os.Stat(filepath.Join(pkgDir, "go.mod")); err == nil {
+		goEnv["GO111MODULE"] = "on"
+	} else {
+		goEnv["GO111MODULE"] = "off"
+	}
+	//specified commit?
 	if c.Commitish != "" {
 		s.Printf("loading specific commit %s\n", c.Commitish)
 		//go to specific commit
@@ -95,7 +112,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 		targetName := filepath.Base(target)
 		//go-get target deps
 		if c.GoGet && targetDir != pkgDir {
-			if err := s.exec(targetDir, "go", nil, "get", "-v", "-d", "."); err != nil {
+			if err := s.exec(targetDir, "go", goEnv, "get", "-v", "-d", "."); err != nil {
 				s.Printf("failed to get dependencies  of subdirectory %s", t)
 				continue
 			}
@@ -128,13 +145,12 @@ func (s *goxHandler) compile(c *Compilation) error {
 				s.Printf("cgo disabled")
 				c.Env["CGO_ENABLED"] = "0"
 			}
-			env := environ{}
 			for k, v := range c.Env {
 				s.Printf("env: %s=%s", k, v)
-				env[k] = v
+				goEnv[k] = v
 			}
 			//run go build with cross compile configuration
-			if err := s.exec(targetDir, "go", env, args...); err != nil {
+			if err := s.exec(targetDir, "go", goEnv, args...); err != nil {
 				s.Printf("failed to build %s\n", targetFilename)
 				continue
 			}

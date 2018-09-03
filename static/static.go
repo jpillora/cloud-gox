@@ -17,7 +17,13 @@ func FileSystemHandler() http.Handler {
 		log.Printf("serving local static/files")
 		h = http.FileServer(http.Dir("static/files/"))
 	} else {
-		h = http.FileServer(&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "files"})
+		log.Printf("serving embedded static files")
+		h = http.FileServer(&assetfs.AssetFS{
+			Asset:     Asset,
+			AssetInfo: AssetInfo,
+			AssetDir:  AssetDir,
+			Prefix:    "files",
+		})
 	}
 	return h
 }

@@ -48,10 +48,10 @@ type goxHandler struct {
 }
 
 type serverConfig struct {
-	Version, Bin, Path, OS, Arch string
-	NumCPU                       int
-	Platforms                    Platforms
-	BinVersion                   string
+	Version, Bin, OS, Arch string
+	NumCPU                 int
+	Platforms              Platforms
+	BinVersion             string
 }
 
 type serverState struct {
@@ -84,10 +84,6 @@ func New() (http.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	goPath := os.Getenv("GOPATH")
-	if goPath == "" {
-		return nil, fmt.Errorf("GOPATH is not set")
-	}
 	userMessage := ""
 	if u, err := user.Current(); err == nil {
 		userMessage = fmt.Sprintf(" (process user: %s)", u.Username)
@@ -115,7 +111,6 @@ func New() (http.Handler, error) {
 		config: serverConfig{
 			Version:    strings.TrimPrefix(runtime.Version(), "go"),
 			Bin:        goBin,
-			Path:       goPath,
 			OS:         runtime.GOOS,
 			Arch:       runtime.GOARCH,
 			NumCPU:     runtime.NumCPU(),
@@ -138,7 +133,7 @@ func New() (http.Handler, error) {
 	githubPan := os.Getenv("GH_PAN")
 	if githubPan != "" {
 		s.Printf("Using Github PAN to clone private repositories")
-		gitCommand := exec.Command("bash", "-c", "git config --global url.\"https://" + githubPan + ":x-oauth-basic@github.com/\".insteadOf \"https://github.com/\"")
+		gitCommand := exec.Command("bash", "-c", "git config --global url.\"https://"+githubPan+":x-oauth-basic@github.com/\".insteadOf \"https://github.com/\"")
 		output, err := gitCommand.CombinedOutput()
 		if err != nil {
 			s.Printf("Git config failed: %s", err)
