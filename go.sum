@@ -1,0 +1,12 @@
+github.com/elazarl/go-bindata-assetfs v1.0.0 h1:G/bYguwHIzWq9ZoyUQqrjTmJbbYn3j3CKKpKinvZLFk=
+github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
+github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
+github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
+github.com/jpillora/go-realtime v0.0.0-20160221154117-c8b52e99fa07 h1:Itxj1uh5vVKoNUp+UxCB2fBhdbtaMKvMW6w7MwnXlVk=
+github.com/jpillora/go-realtime v0.0.0-20160221154117-c8b52e99fa07/go.mod h1:1DqUbOZ8NZ8LA0ay9ht2BLRahV8o25KU4vYLV4YvQCU=
+github.com/jpillora/opts v0.0.0-20160806153215-3f7962811f23 h1:Oba9AG0bpHgp5FZFG+XfiNDlFX6tLO0AWCMe/YJR0GM=
+github.com/jpillora/opts v0.0.0-20160806153215-3f7962811f23/go.mod h1:8/sC6XyMKHq/ybiU9Oqc1i0tDjFA/6otW7+Ha/qtnfo=
+github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1 h1:PJPDf8OUfOK1bb/NeTKd4f1QXZItOX389VN3B6qC8ro=
+github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1/go.mod h1:1NbS8ALrpOvjt0rHPNLyCIeMtbizbir8U//inJ+zuB8=
+github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a h1:+J2gw7Bw77w/fbK7wnNJJDKmw1IbWft2Ul5BzrG1Qm8=
+github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a/go.mod h1:M1qoD/MqPgTZIk0EWKB38wE28ACRfVcn+cU08jyArI0=
