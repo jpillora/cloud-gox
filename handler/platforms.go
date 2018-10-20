@@ -15,6 +15,7 @@ var defaultPlatforms = map[string]bool{
 	"linux/arm":     true,
 	"darwin/386":    true,
 	"darwin/amd64":  true,
+	"windows/386":   true,
 	"windows/amd64": true,
 }
 
