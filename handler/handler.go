@@ -17,11 +17,12 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jpillora/cloud-gox/release"
 	"github.com/jpillora/cloud-gox/static"
-	"github.com/jpillora/go-realtime"
+	"github.com/jpillora/velox"
 )
 
 const maxQueue = 20
@@ -38,13 +39,13 @@ func randomID() string {
 //goxHandler is an HTTP server accepting requests
 //for cross-compilation
 type goxHandler struct {
-	auth      string
-	q         chan *Compilation
-	logger    *Logger
-	files, rt http.Handler
-	releasers map[string]release.ReleaseHost
-	config    serverConfig
-	state     serverState
+	auth        string
+	q           chan *Compilation
+	logger      *Logger
+	files, sync http.Handler
+	releasers   map[string]release.ReleaseHost
+	config      serverConfig
+	state       serverState
 }
 
 type serverConfig struct {
@@ -55,7 +56,8 @@ type serverConfig struct {
 }
 
 type serverState struct {
-	realtime.Object
+	sync.Mutex
+	velox.State
 	Ready        bool
 	NumQueued    int
 	NumDone      int
@@ -95,8 +97,6 @@ func New() (http.Handler, error) {
 	if err := os.Mkdir(tempBuild, 0755); err != nil && !os.IsExist(err) {
 		return nil, fmt.Errorf("Failed to create temporary directory: %s", err)
 	}
-
-	rt := realtime.NewHandler()
 	//
 	s := &goxHandler{
 		q:      make(chan *Compilation, maxQueue),
@@ -107,7 +107,6 @@ func New() (http.Handler, error) {
 			// "s3": TODO,
 		},
 		files: static.FileSystemHandler(),
-		rt:    rt,
 		config: serverConfig{
 			Version:    strings.TrimPrefix(runtime.Version(), "go"),
 			Bin:        goBin,
@@ -123,8 +122,7 @@ func New() (http.Handler, error) {
 		},
 	}
 
-	//sync state
-	rt.MustAdd("state", &s.state)
+	s.sync = velox.SyncHandler(&s.state)
 
 	//start logger first! copy log messages into state
 	go s.dequeueLogs()
@@ -159,7 +157,7 @@ func New() (http.Handler, error) {
 	go func() {
 		//ready!
 		s.state.Ready = true
-		s.state.Update()
+		s.state.Push()
 		//service compilation queue
 		go s.dequeue()
 	}()
@@ -170,8 +168,8 @@ func New() (http.Handler, error) {
 func (s *goxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	path := r.URL.Path
-	if path == "/hook" {
+	base := filepath.Base(r.URL.Path)
+	if base == "hook" {
 		s.hookReq(w, r)
 		return
 	}
@@ -185,13 +183,15 @@ func (s *goxHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if path == "/realtime" {
-		s.rt.ServeHTTP(w, r)
-	} else if path == "/config" {
+	if base == "sync" {
+		s.sync.ServeHTTP(w, r)
+	} else if base == "velox.js" {
+		velox.JS.ServeHTTP(w, r)
+	} else if base == "config" {
 		s.configReq(w, r)
-	} else if path == "/compile" {
+	} else if base == "compile" {
 		s.enqueueReq(w, r)
-	} else if strings.HasPrefix(path, "/download") {
+	} else if strings.HasPrefix(r.URL.Path, "/download") {
 		s.downloadReq(w, r)
 	} else {
 		s.files.ServeHTTP(w, r)
@@ -292,9 +292,12 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 	}
 	c.Variables[c.VersionVar] = c.Version
 
+	s.state.Lock()
 	s.state.NumTotal++
 	c.ID = randomID()
 	s.Printf("enqueue compilation (%s #%d)\n", c.ID, s.state.NumTotal)
+	s.state.Unlock()
+
 	c.Completed = false
 	c.Queued = true
 	c.Error = ""
@@ -304,19 +307,23 @@ func (s *goxHandler) enqueue(c *Compilation) error {
 	}
 
 	s.q <- c
+	s.state.Lock()
 	s.state.NumQueued = len(s.q) //count after enqueue
-	s.state.Update()
+	s.state.Unlock()
+	s.state.Push()
 	return nil
 }
 
 func (s *goxHandler) dequeue() {
 	//run each compilation in series
 	for c := range s.q {
+		s.state.Lock()
 		s.state.Compilations = append([]*Compilation{c}, s.state.Compilations...)
 		c.Queued = false
 		s.state.Ready = false
 		s.state.NumQueued = len(s.q) //count after dequeue
-		s.state.Update()
+		s.state.Unlock()
+		s.state.Push()
 		//run compile!
 		if err := s.compile(c); err != nil {
 			s.Printf("compile error '%s': %s\n", c.Package, err)
@@ -324,15 +331,18 @@ func (s *goxHandler) dequeue() {
 		}
 		c.CompletedAt = time.Now()
 		c.Completed = true
+		s.state.Lock()
 		s.state.Ready = true
 		s.state.NumDone++
-		s.state.Update()
+		s.state.Unlock()
+		s.state.Push()
 	}
 }
 
 func (s *goxHandler) dequeueLogs() {
 	for l := range s.logger.messages {
 		log.Print(l.Message)
+		s.state.Lock()
 		//handle insertions
 		key := strconv.FormatInt(l.ID, 10)
 		s.state.Log[key] = l
@@ -344,7 +354,8 @@ func (s *goxHandler) dequeueLogs() {
 		} else {
 			s.state.LogCount++
 		}
-		s.state.Update()
+		s.state.Unlock()
+		s.state.Push()
 	}
 }
 

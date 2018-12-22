@@ -27,15 +27,15 @@ app.controller("AppController", function($scope, $http) {
   });
 
   //link up to angular
-  var rt = realtime("/realtime");
   $scope.state = {};
-  rt.add("state", $scope.state, function() {
+  var v = velox("/sync", $scope.state);
+  v.onupdate = function() {
     computeLog();
-    $scope.$apply();
-  });
-  rt.onstatus = function(online) {
+    $scope.$applyAsync();
+  };
+  v.onchange = function(connected) {
     $scope.$apply(function() {
-      $scope.Connected = online;
+      $scope.Connected = connected;
     });
   };
 
@@ -100,11 +100,9 @@ app.controller("AppController", function($scope, $http) {
     var first = state.LogOffset;
     var last = first + state.LogCount;
     var i = first - 1;
-    while ((elem = document.querySelector("#log" + i--)))
-      elem.remove();
+    while ((elem = document.querySelector("#log" + i--))) elem.remove();
     i = last + 1;
-    while ((elem = document.querySelector("#log" + i++)))
-      elem.remove();
+    while ((elem = document.querySelector("#log" + i++))) elem.remove();
 
     //render new logs
     for (var i = state.LogOffset; i <= last; i++) {
@@ -121,7 +119,8 @@ app.controller("AppController", function($scope, $http) {
         var user = l.src !== "cloud-gox";
         div.className = "group " + (user ? "user shortened" : "cloudgox");
         div.setAttribute("src", l.src);
-        if (user) angular.element(div).on("click", function() {
+        if (user)
+          angular.element(div).on("click", function() {
             angular.element(this).toggleClass("shortened");
           });
         group = div;
@@ -146,8 +145,8 @@ app.controller("AppController", function($scope, $http) {
 
       var timestamp = document.createElement("span");
       timestamp.className = "timestamp";
-      timestamp.innerHTML = moment(l.t).format("YYYY/MM/DD hh:mm:ss") +
-        "&nbsp;";
+      timestamp.innerHTML =
+        moment(l.t).format("YYYY/MM/DD hh:mm:ss") + "&nbsp;";
       angular.element(span).prepend(timestamp);
 
       angular.element(group).prepend(span);

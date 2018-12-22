@@ -191,7 +191,7 @@ func (s *goxHandler) compile(c *Compilation) error {
 			//ready for download!
 			s.Printf("compiled %s\n", targetFilename)
 			c.Files = append(c.Files, targetFilename)
-			s.state.Update()
+			s.state.Push()
 		}
 	}
 
